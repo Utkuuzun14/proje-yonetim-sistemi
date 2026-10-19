@@ -1,0 +1,133 @@
+# CI hattı — kart #39 (Sprint 2)
+# Her PR'da ve develop/main'e push'ta çalışır. Teknoloji yığını henüz kesinleşmediği için
+# client/ ve server/ klasörlerinde hangi proje dosyası varsa (package.json, requirements.txt,
+# pom.xml) ona uygun build + test adımlarını kendisi seçer. Karar netleşince sadeleştirilecek.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: Proje algılama
+    runs-on: ubuntu-latest
+    outputs:
+      node_dirs: ${{ steps.scan.outputs.node_dirs }}
+      python_dirs: ${{ steps.scan.outputs.python_dirs }}
+      java_dirs: ${{ steps.scan.outputs.java_dirs }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: scan
+        run: |
+          node=(); py=(); java=()
+          for d in client server; do
+            [ -f "$d/package.json" ] && node+=("\"$d\"")
+            { [ -f "$d/requirements.txt" ] || [ -f "$d/pyproject.toml" ]; } && py+=("\"$d\"")
+            { [ -f "$d/pom.xml" ] || [ -f "$d/build.gradle" ] || [ -f "$d/build.gradle.kts" ]; } && java+=("\"$d\"")
+          done
+          join() { local IFS=,; echo "[$*]"; }
+          echo "node_dirs=$(join "${node[@]}")"     >> "$GITHUB_OUTPUT"
+          echo "python_dirs=$(join "${py[@]}")"     >> "$GITHUB_OUTPUT"
+          echo "java_dirs=$(join "${java[@]}")"     >> "$GITHUB_OUTPUT"
+          echo "Node: ${node[*]:-yok} | Python: ${py[*]:-yok} | Java: ${java[*]:-yok}"
+
+  node:
+    name: Node (${{ matrix.dir }})
+    needs: detect
+    if: needs.detect.outputs.node_dirs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.detect.outputs.node_dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Bağımlılıklar
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Build
+        run: npm run build --if-present
+      - name: Test
+        run: npm test --if-present
+        env:
+          CI: true
+
+  python:
+    name: Python (${{ matrix.dir }})
+    needs: detect
+    if: needs.detect.outputs.python_dirs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.detect.outputs.python_dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bağımlılıklar
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install .; fi
+          pip install pytest
+      - name: Test
+        run: |
+          if [ -f manage.py ]; then python manage.py test; else pytest; fi
+
+  java:
+    name: Java (${{ matrix.dir }})
+    needs: detect
+    if: needs.detect.outputs.java_dirs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.detect.outputs.java_dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build + test
+        run: |
+          if [ -f pom.xml ]; then
+            if [ -f mvnw ]; then ./mvnw -B verify; else mvn -B verify; fi
+          else
+            if [ -f gradlew ]; then ./gradlew build; else gradle build; fi
+          fi
+
+  # Branch kurallarında "zorunlu kontrol" olarak bu iş seçilir; adı sabit kalmalı.
+  ci-ok:
+    name: CI sonucu
+    needs: [detect, node, python, java]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tüm işler başarılı mı?
+        run: |
+          for r in "${{ needs.detect.result }}" "${{ needs.node.result }}" "${{ needs.python.result }}" "${{ needs.java.result }}"; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then echo "CI başarısız ($r)"; exit 1; fi
+          done
+          echo "CI yeşil ✅"
