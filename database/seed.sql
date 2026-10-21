@@ -34,15 +34,15 @@ SELECT setval('roles_id_seq', (SELECT MAX(id) FROM roles));
 -- -----------------------------------------------------------------------------
 -- 2. KULLANICILAR (SEK TECH Ekip Üyeleri)
 -- -----------------------------------------------------------------------------
--- Parolalar varsayılan test parolası ('Password123!') için bcrypt hash özetidir
+-- Parolalar varsayılan test parolası ('Password123!') için bcrypt hash özetidir (cost 10, bcrypt.checkpw ile doğrulandı)
 INSERT INTO users (id, role_id, name, email, password_hash) VALUES
-(1, 1, 'Hakan Koço',             'hakan@sektech.com',       '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3'),
-(2, 1, 'Abdulkahhar Türkoğlu',   'abdulkahhar@sektech.com', '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3'),
-(3, 2, 'Mert Yanık',             'mert@sektech.com',        '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3'),
-(4, 2, 'Ümit Efe Özkaleli',      'umitefe@sektech.com',     '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3'),
-(5, 2, 'Mustafa Şahin',          'mustafa@sektech.com',     '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3'),
-(6, 2, 'Buğra Durmuş',           'bugra@sektech.com',       '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3'),
-(7, 2, 'Utku Uzun',              'utku@sektech.com',        '$2b$10$wT37tV.r3JtUv/k4L8v25.m7GgH1jK2l3n4o5p6q7r8s9t0u1v2w3')
+(1, 1, 'Hakan Koço',             'hakan@sektech.com',       '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC'),
+(2, 1, 'Abdulkahhar Türkoğlu',   'abdulkahhar@sektech.com', '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC'),
+(3, 2, 'Mert Yanık',             'mert@sektech.com',        '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC'),
+(4, 2, 'Ümit Efe Özkaleli',      'umitefe@sektech.com',     '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC'),
+(5, 2, 'Mustafa Şahin',          'mustafa@sektech.com',     '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC'),
+(6, 2, 'Buğra Durmuş',           'bugra@sektech.com',       '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC'),
+(7, 2, 'Utku Uzun',              'utku@sektech.com',        '$2b$10$hJWrzXEiJe2OARGwXOgZveduZ9n2aDFHaqOBpcDAbIzOIZCNpFCBC')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));

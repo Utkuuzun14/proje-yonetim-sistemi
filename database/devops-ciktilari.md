@@ -254,8 +254,11 @@ volumes:
 Sistem ayağa kaldırıldığında aşağıdaki komutlarla doğrulanabilir:
 
 ```bash
-# 1. Tüm sistemi başlatma
-docker compose up --build -d
+# 1. Sistemi başlatma
+#    Şimdilik yalnızca veri tabanı (server/ ve client/ Dockerfile'ları henüz yok):
+docker compose up -d
+#    İskeletler eklenince tüm sistem (db + server + client):
+docker compose --profile app up --build -d
 
 # 2. Veri tabanı tablolarını kontrol etme
 docker exec -it sektech-db psql -U admin -d sektech -c "\dt"
