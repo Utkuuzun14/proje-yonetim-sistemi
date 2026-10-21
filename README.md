@@ -23,12 +23,12 @@ Küçük ve orta ölçekli yazılım ekipleri projelerini, görevlerini ve ilerl
 
 | Ekip üyesi | Birincil rol | İkincil rol (öneri) | GitHub |
 |---|---|---|---|
-| Hakan Koço | Proje Yöneticisi | Scrum Master | — |
-| Abdulkahhar Türkoğlu | Müşteri Temsilcisi | Ürün Sahibi (PO), Wireframe/UX | — |
-| Mert Yanık | Raporlama Sorumlusu | Dokümantasyon Sorumlusu | — |
-| Ümit Efe Özkaleli | Frontend Geliştirici | UI Tasarım (hi-fi) | — |
-| Mustafa Şahin | Backend Geliştirici | API Dokümantasyonu | — |
-| Buğra Durmuş | Veri Tabanı Yöneticisi | DevOps, Backend destek | — |
+| Hakan Koço | Proje Yöneticisi | Scrum Master | [@HakanKoco](https://github.com/HakanKoco) |
+| Abdulkahhar Türkoğlu | Müşteri Temsilcisi | Ürün Sahibi (PO), Wireframe/UX | [@trkglAbdulkahhar](https://github.com/trkglAbdulkahhar) |
+| Mert Yanık | Raporlama Sorumlusu | Dokümantasyon Sorumlusu | [@mrtynk](https://github.com/mrtynk) |
+| Ümit Efe Özkaleli | Frontend Geliştirici | UI Tasarım (hi-fi) | [@umitefe0](https://github.com/umitefe0) |
+| Mustafa Şahin | Backend Geliştirici | API Dokümantasyonu | [@MsahinSft](https://github.com/MsahinSft) |
+| Buğra Durmuş | Veri Tabanı Yöneticisi | DevOps, Backend destek | [@drmsbgr](https://github.com/drmsbgr) |
 | Utku Uzun | Test Uzmanı (QA) | CI Sorumlusu | [@Utkuuzun14](https://github.com/Utkuuzun14) |
 
 İkincil roller öneridir; Sprint 0'da ekipçe onaylanır.
