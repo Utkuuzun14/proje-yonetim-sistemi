@@ -2,6 +2,8 @@
 
 Bu belge değerlendirme taslağıdır; ekip onayı veya yapılmış toplantı tutanağı değildir.
 
+İlk hafta teslim takibi, ayrıntılı sunum akışı ve ortak UX inceleme formu: [İlk hafta teslim paketi](ilk-hafta-teslimi.md). Kaynaklar 22 Ekim 2026 tarihinde tekrar kontrol edildi.
+
 ## Resmî kaynaklara dayalı değerlendirme — 21 Ekim 2026
 
 React'in resmî kılavuzu Vite ile TypeScript uygulaması kurmayı destekler; ancak yönlendirme, veri getirme ve olası sunucu tarafı render gereksinimlerini ekibin yönetmesi gerektiğini belirtir. Bu repo için React + Vite önerisi, mevcut client README tercihi ve ayrı backend planına dayanır; tüm projeler için genel bir üstünlük iddiası değildir. [React kılavuzu](https://react.dev/learn/build-a-react-app-from-scratch)
