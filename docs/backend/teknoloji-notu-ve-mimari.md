@@ -90,7 +90,9 @@ server/
 | **JWT (Bearer token)** | Durumsuz, ölçeklenmesi kolay; React'ten `Authorization` başlığıyla basit kullanım; test etmesi kolay | Süresi dolmadan iptal zor → kısa süre (ör. 8 saat) ile sınırlanır |
 | OAuth / harici sağlayıcı | Şifre saklanmaz | Kapsam dışı, kurulum maliyeti yüksek |
 
-**Seçim: JWT (HS256), 8 saat geçerli; şifreler bcrypt (cost 10) ile özetlenir.**
+**Seçim: JWT (HS256); şifreler bcrypt (maliyet 12, SRS FR-02) ile özetlenir.** Şu an 8 saatlik tek token
+kullanılıyor; SRS'teki 1 saatlik access + 7 günlük refresh token modeli ön yüzle birlikte değerlendirilecek.
+Giriş uç noktasında IP başına 15 dakikada 5 başarısız deneme sınırı uygulanır (SRS 4.2).
 Token içeriği: `sub` (kullanıcı id), `role`. Rol bazlı yetki (RBAC) Sprint 3'te (#44) `authorize(...)`
 middleware'i ile eklenecek; roller ve izinler `roles.permissions` (JSONB) alanından okunur.
 
