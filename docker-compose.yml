@@ -1,0 +1,71 @@
+# =============================================================================
+# SEK TECH — Proje Yönetim Platformu
+# Tek Komutla Kurulum Orkestrasyonu (docker-compose.yml) — Sprint 2 (Issue #38)
+# Sorumlu: Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)
+#
+# Çalıştırma:
+#   docker compose up -d                       → şimdilik yalnızca veri tabanı (db)
+#   docker compose --profile app up --build -d → db + server + client
+#
+# Not: server/ ve client/ iskeletleri ve Dockerfile'ları henüz eklenmediği için bu iki servis
+# "app" profiline alındı. İskeletler (#29, #30) gelince profil satırları kaldırılacak ve
+# "docker compose up --build" tek komutla tüm sistemi kuracak.
+#
+# Servisler:
+#   - db:     PostgreSQL 15 (Port 5432) — Otomatik init.sql ve seed.sql kurulumu
+#   - server: Node.js / Express API (Port 5000)
+#   - client: React / Vite Web Ön Yüz (Port 3000)
+# =============================================================================
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sektech-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sektech
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d sektech"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    profiles: ["app"]   # server/Dockerfile eklenince kaldırılacak (#30)
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sektech-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgresql://admin:password@db:5432/sektech
+      JWT_SECRET: dev-jwt-secret-key-sektech-2026
+
+  client:
+    profiles: ["app"]   # client/Dockerfile eklenince kaldırılacak (#29)
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sektech-client
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
