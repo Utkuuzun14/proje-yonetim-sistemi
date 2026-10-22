@@ -72,6 +72,7 @@ paths:
     post:
       tags: [Auth]
       summary: E-posta ve şifre ile giriş
+      description: 'SRS 4.2 — aynı IP adresinden 15 dakikada en fazla 5 başarısız deneme; aşımda 429.'
       requestBody:
         required: true
         content:
@@ -85,6 +86,7 @@ paths:
               schema: { $ref: '#/components/schemas/AuthResponse' }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
 
   /api/auth/me:
     get:
@@ -386,7 +388,7 @@ components:
       properties:
         name: { type: string, minLength: 2, maxLength: 100, example: Ayşe Yılmaz }
         email: { type: string, format: email, example: ayse@sektech.com }
-        password: { type: string, minLength: 8, maxLength: 72, description: En az bir harf ve bir rakam, example: Gizli1234 }
+        password: { type: string, minLength: 8, maxLength: 72, description: 'SRS FR-01 — en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter', example: 'Gizli123!' }
     LoginRequest:
       type: object
       required: [email, password]
@@ -470,6 +472,9 @@ components:
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
     Conflict:
       description: Çakışma (CONFLICT)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    TooManyRequests:
+      description: Aynı IP'den 15 dakikada 5 başarısız giriş denemesi aşıldı (TOO_MANY_REQUESTS). `Retry-After` başlığı bekleme süresini verir.
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
     ServiceUnavailable:
       description: Veri tabanına ulaşılamıyor (SERVICE_UNAVAILABLE)

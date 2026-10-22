@@ -27,11 +27,11 @@ describe('auth.service (birim)', () => {
   test('register: şifreyi düz metin değil bcrypt özeti olarak saklar ve varsayılan rolü verir', async () => {
     const repo = fakeRepo();
     const service = createAuthService(repo);
-    const { user, token } = await service.register({ name: 'Ayşe', email: 'ayse@x.com', password: 'Gizli1234' });
+    const { user, token } = await service.register({ name: 'Ayşe', email: 'ayse@x.com', password: 'Gizli123!' });
 
     const saved = repo.store[0];
-    expect(saved.password_hash).not.toBe('Gizli1234');
-    expect(await bcrypt.compare('Gizli1234', saved.password_hash)).toBe(true);
+    expect(saved.password_hash).not.toBe('Gizli123!');
+    expect(await bcrypt.compare('Gizli123!', saved.password_hash)).toBe(true);
     expect(user.role).toBe(DEFAULT_ROLE);
     expect(user).not.toHaveProperty('password_hash');
     expect(typeof token).toBe('string');
@@ -40,7 +40,7 @@ describe('auth.service (birim)', () => {
   test('register: kayıtlı e-posta → 409 CONFLICT', async () => {
     const repo = fakeRepo([{ id: 1, email: 'var@x.com', password_hash: 'h' }]);
     const service = createAuthService(repo);
-    await expect(service.register({ name: 'A', email: 'var@x.com', password: 'Gizli1234' })).rejects.toMatchObject({
+    await expect(service.register({ name: 'A', email: 'var@x.com', password: 'Gizli123!' })).rejects.toMatchObject({
       status: 409,
       code: 'CONFLICT',
     });
@@ -51,7 +51,7 @@ describe('auth.service (birim)', () => {
     const repo = fakeRepo();
     repo.create.mockRejectedValueOnce(Object.assign(new Error('dup'), { code: '23505' }));
     const service = createAuthService(repo);
-    await expect(service.register({ name: 'A', email: 'a@x.com', password: 'Gizli1234' })).rejects.toMatchObject({
+    await expect(service.register({ name: 'A', email: 'a@x.com', password: 'Gizli123!' })).rejects.toMatchObject({
       status: 409,
     });
   });

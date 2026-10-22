@@ -43,7 +43,7 @@ function createAuthService(usersRepository = defaultRepository) {
       const user = await usersRepository.findByEmailWithPassword(email);
       // Kullanıcı yoksa da aynı mesaj: hangi alanın yanlış olduğu belli edilmez (TS-AUTH-05)
       const ok = user ? await bcrypt.compare(password, user.password_hash) : false;
-      if (!ok) throw AppError.unauthorized('E-posta veya şifre hatalı.');
+      if (!ok) throw AppError.unauthorized('Kimlik doğrulama başarısız: e-posta veya şifre hatalı.');
       const publicUser = toPublic(user);
       return { user: publicUser, token: signToken(publicUser) };
     },

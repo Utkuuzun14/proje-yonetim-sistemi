@@ -12,7 +12,7 @@ afterAll(() => pool.end());
 describe('POST /api/auth/register', () => {
   test('TS-AUTH-01: geçerli bilgilerle kayıt → 201, şifre hash\'li saklanır', async () => {
     const email = uniq();
-    const res = await request(app).post('/api/auth/register').send({ name: 'Test Kullanıcı', email, password: 'Gizli1234' });
+    const res = await request(app).post('/api/auth/register').send({ name: 'Test Kullanıcı', email, password: 'Gizli123!' });
 
     expect(res.status).toBe(201);
     expect(res.body.data.user).toMatchObject({ name: 'Test Kullanıcı', email, role: 'Ekip Üyesi' });
@@ -21,15 +21,15 @@ describe('POST /api/auth/register', () => {
 
     const { rows } = await pool.query('SELECT password_hash FROM users WHERE email = $1', [email]);
     expect(rows[0].password_hash).toMatch(/^\$2[aby]\$/);
-    expect(rows[0].password_hash).not.toContain('Gizli1234');
+    expect(rows[0].password_hash).not.toContain('Gizli123!');
   });
 
   test('TS-AUTH-02: aynı e-posta (büyük/küçük harf farkıyla) ikinci kez → 409', async () => {
     const email = uniq();
-    await request(app).post('/api/auth/register').send({ name: 'Bir', email, password: 'Gizli1234' }).expect(201);
+    await request(app).post('/api/auth/register').send({ name: 'Bir', email, password: 'Gizli123!' }).expect(201);
     const res = await request(app)
       .post('/api/auth/register')
-      .send({ name: 'İki', email: email.toUpperCase(), password: 'Gizli1234' });
+      .send({ name: 'İki', email: email.toUpperCase(), password: 'Gizli123!' });
 
     expect(res.status).toBe(409);
     expect(res.body.error.code).toBe('CONFLICT');
@@ -62,8 +62,8 @@ describe('POST /api/auth/login', () => {
 
   test('TS-AUTH-04: kayıt olan kullanıcı giriş yapabilir (e-posta büyük harfle de)', async () => {
     const email = uniq();
-    await request(app).post('/api/auth/register').send({ name: 'Yeni', email, password: 'Gizli1234' }).expect(201);
-    const res = await request(app).post('/api/auth/login').send({ email: email.toUpperCase(), password: 'Gizli1234' });
+    await request(app).post('/api/auth/register').send({ name: 'Yeni', email, password: 'Gizli123!' }).expect(201);
+    const res = await request(app).post('/api/auth/login').send({ email: email.toUpperCase(), password: 'Gizli123!' });
     expect(res.status).toBe(200);
   });
 

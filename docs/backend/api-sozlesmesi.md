@@ -34,6 +34,7 @@ Hata:
 | 403 | `FORBIDDEN` | Giriş yapılmış ama yetki yok (RBAC, Sprint 3) |
 | 404 | `NOT_FOUND` | Kayıt veya uç nokta yok |
 | 409 | `CONFLICT` | Tekil alan çakışması (ör. kayıtlı e-posta) |
+| 429 | `TOO_MANY_REQUESTS` | Aynı IP'den 15 dk içinde 5 başarısız giriş (SRS 4.2); `Retry-After` başlığı |
 | 500 | `INTERNAL_ERROR` | Beklenmeyen hata — ayrıntı istemciye gönderilmez, sunucu loguna yazılır |
 | 503 | `SERVICE_UNAVAILABLE` | Veri tabanına ulaşılamıyor (`/api/health`) |
 
@@ -48,6 +49,9 @@ alanlarının altına yazılır.
 - `POST /api/auth/login` → `{ data: { user, token } }`
 - Sonraki isteklerde: `Authorization: Bearer <token>` (JWT, 8 saat)
 - Token içeriği: `sub` (kullanıcı id), `role` (`Yönetici` | `Ekip Üyesi`)
+- Parola kuralı (SRS FR-01): en az 8 karakter; büyük harf, küçük harf, rakam ve özel karakter. Özet: bcrypt, maliyet 12.
+- Giriş deneme sınırı (SRS 4.2): IP başına 15 dakikada 5 başarısız deneme → 429.
+- **Açık karar (SRS FR-02):** SRS 1 saatlik access + 7 günlük refresh token istiyor; şu an 8 saatlik tek token var. Ön yüzle birlikte karar verilecek.
 
 ## 3. Uç noktalar
 

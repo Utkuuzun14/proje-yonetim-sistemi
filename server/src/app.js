@@ -12,8 +12,9 @@ const notFound = require('./middleware/notFound');
 
 const openapi = YAML.parse(fs.readFileSync(path.join(__dirname, 'docs', 'openapi.yaml'), 'utf8'));
 
-function createApp() {
+function createApp(options = {}) {
   const app = express();
+  if (config.trustProxy) app.set('trust proxy', 1); // ters vekil arkasında gerçek istemci IP'si
 
   app.use(helmet({ contentSecurityPolicy: false })); // Swagger UI satır içi betik kullanır
   app.use(cors({ origin: config.corsOrigin }));
@@ -23,7 +24,7 @@ function createApp() {
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { customSiteTitle: 'SEK TECH API' }));
 
   app.use('/api/health', require('./modules/health/health.routes'));
-  app.use('/api/auth', require('./modules/auth/auth.routes'));
+  app.use('/api/auth', require('./modules/auth/auth.routes').createAuthRouter(options));
   app.use('/api/users', require('./modules/users/users.routes'));
 
   app.use(notFound);

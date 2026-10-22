@@ -17,10 +17,13 @@ const registerSchema = z.object({
   email,
   password: z
     .string({ error: 'Şifre zorunludur.' })
+    // SRS FR-01 / US-01: en az 8 karakter; büyük harf, küçük harf, rakam ve özel karakter
     .min(8, 'Şifre en az 8 karakter olmalıdır.')
     .max(72, 'Şifre en fazla 72 karakter olabilir.')
-    .regex(/[A-Za-zÇĞİÖŞÜçğıöşü]/, 'Şifre en az bir harf içermelidir.')
-    .regex(/[0-9]/, 'Şifre en az bir rakam içermelidir.'),
+    .regex(/[A-ZÇĞİÖŞÜ]/, 'Şifre en az bir büyük harf içermelidir.')
+    .regex(/[a-zçğıöşü]/, 'Şifre en az bir küçük harf içermelidir.')
+    .regex(/[0-9]/, 'Şifre en az bir rakam içermelidir.')
+    .regex(/[^A-Za-z0-9ÇĞİÖŞÜçğıöşü\s]/, 'Şifre en az bir özel karakter içermelidir (ör. ! ? . * #).'),
 });
 
 const loginSchema = z.object({
