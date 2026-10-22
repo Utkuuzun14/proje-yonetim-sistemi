@@ -255,9 +255,9 @@ Sistem ayağa kaldırıldığında aşağıdaki komutlarla doğrulanabilir:
 
 ```bash
 # 1. Sistemi başlatma
-#    Şimdilik yalnızca veri tabanı (server/ ve client/ Dockerfile'ları henüz yok):
-docker compose up -d
-#    İskeletler eklenince tüm sistem (db + server + client):
+#    Veri tabanı + API (client iskeleti henüz yok):
+docker compose up --build -d
+#    Client eklenince tüm sistem (db + server + client):
 docker compose --profile app up --build -d
 
 # 2. Veri tabanı tablolarını kontrol etme
