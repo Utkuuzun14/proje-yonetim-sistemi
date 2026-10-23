@@ -4,12 +4,11 @@
 # Sorumlu: Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)
 #
 # Çalıştırma:
-#   docker compose up -d                       → şimdilik yalnızca veri tabanı (db)
+#   docker compose up --build -d               → db + server (API: http://localhost:5000/api/docs)
 #   docker compose --profile app up --build -d → db + server + client
 #
-# Not: server/ ve client/ iskeletleri ve Dockerfile'ları henüz eklenmediği için bu iki servis
-# "app" profiline alındı. İskeletler (#29, #30) gelince profil satırları kaldırılacak ve
-# "docker compose up --build" tek komutla tüm sistemi kuracak.
+# Not: client/ iskeleti ve Dockerfile'ı henüz eklenmediği için client servisi "app" profilinde.
+# İskelet (#29) gelince profil satırı kaldırılacak.
 #
 # Servisler:
 #   - db:     PostgreSQL 15 (Port 5432) — Otomatik init.sql ve seed.sql kurulumu
@@ -39,7 +38,6 @@ services:
       retries: 5
 
   server:
-    profiles: ["app"]   # server/Dockerfile eklenince kaldırılacak (#30)
     build:
       context: ./server
       dockerfile: Dockerfile

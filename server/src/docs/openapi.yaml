@@ -1,0 +1,481 @@
+openapi: 3.0.3
+info:
+  title: SEK TECH Proje Yönetim Sistemi API
+  version: 0.5.0
+  description: |
+    API sözleşmesi **v0.5** (kart #30) ve kimlik doğrulama API'si (kart #37).
+
+    - Tüm yanıtlar JSON. Başarılı yanıt `{ "data": ... }`, hata yanıtı `{ "error": { "code", "message", "details?" } }`.
+    - Kimlik doğrulama: `POST /api/auth/login` ile alınan token `Authorization: Bearer <token>` başlığında gönderilir.
+    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
+      (`x-durum: planlandı`), ilgili sprint'te uygulanacak ve Sprint 2 sonunda (Hakan, #33) dondurulacaktır.
+    - Seed kullanıcıları: `hakan@sektech.com` (Yönetici), `utku@sektech.com` (Ekip Üyesi) … parola `Password123!`.
+servers:
+  - url: http://localhost:5000
+    description: Yerel geliştirme
+tags:
+  - name: Health
+  - name: Auth
+    description: Kayıt, giriş ve oturum (M2) — uygulandı
+  - name: Users
+    description: Kullanıcılar (M2) — listeleme uygulandı, yönetim Sprint 3
+  - name: Projects
+    description: Proje ve üyelik (M1) — planlandı, Sprint 3 (#44)
+  - name: Tasks
+    description: Görevler (M1) — planlandı, Sprint 4 (#51)
+  - name: Comments
+    description: Görev yorumları (M4) — planlandı, Sprint 4 (#51)
+  - name: Files
+    description: Dosyalar (M4) — planlandı, Sprint 5 (#58)
+  - name: Reports
+    description: Raporlama (M5) — planlandı, Sprint 6 (#65)
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Servis ve veri tabanı durumu
+      responses:
+        '200':
+          description: Çalışıyor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status: { type: string, example: ok }
+                      database: { type: string, example: up }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Yeni kullanıcı kaydı (varsayılan rol Ekip Üyesi)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201':
+          description: Kullanıcı oluşturuldu, oturum açıldı
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: E-posta ve şifre ile giriş
+      description: 'SRS 4.2 — aynı IP adresinden 15 dakikada en fazla 5 başarısız deneme; aşımda 429.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: Giriş başarılı
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Oturumdaki kullanıcı
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Kullanıcı bilgisi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/users:
+    get:
+      tags: [Users]
+      summary: Kullanıcıları listele
+      description: Sprint 3'te yalnızca Yönetici rolüne kısıtlanacak (RBAC, #44).
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Kullanıcı listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/users/{id}:
+    get:
+      tags: [Users]
+      summary: Kullanıcı detayı
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Kullanıcı
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------------------------------------------------------------------------
+  # Planlanan uç noktalar (sözleşme taslağı v0.5)
+  # ---------------------------------------------------------------------------
+  /api/projects:
+    get:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Kullanıcının üyesi olduğu projeler (Yönetici tümünü görür)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Proje listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Project' } }
+    post:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Proje oluştur (Yönetici)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectInput' }
+      responses:
+        '201': { description: Oluşturuldu }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/projects/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Proje detayı (üyeler dahil)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Proje }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Projeyi güncelle (Yönetici)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectInput' }
+      responses:
+        '200': { description: Güncellendi }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Projeyi sil (Yönetici)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Silindi }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/projects/{id}/members:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    post:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Projeye üye ekle (Yönetici)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: integer }
+      responses:
+        '201': { description: Eklendi }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/projects/{id}/members/{userId}:
+    delete:
+      tags: [Projects]
+      x-durum: planlandı
+      summary: Projeden üye çıkar (Yönetici)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/Id' }
+        - { name: userId, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204': { description: Çıkarıldı }
+
+  /api/projects/{id}/tasks:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Tasks]
+      x-durum: planlandı
+      summary: Projedeki görevler (filtre — durum, kişi, tarih)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/TaskStatus' } }
+        - { name: assigneeId, in: query, schema: { type: integer } }
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Görev listesi }
+    post:
+      tags: [Tasks]
+      x-durum: planlandı
+      summary: Görev oluştur
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '201': { description: Oluşturuldu }
+
+  /api/tasks/{id}:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    patch:
+      tags: [Tasks]
+      x-durum: planlandı
+      summary: Görevi güncelle / durum değiştir / ata (durum değişimi geçmişe yazılır)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '200': { description: Güncellendi }
+    delete:
+      tags: [Tasks]
+      x-durum: planlandı
+      summary: Görevi sil (Yönetici)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Silindi }
+
+  /api/tasks/{id}/comments:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Comments]
+      x-durum: planlandı
+      summary: Görev yorumları
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Yorum listesi }
+    post:
+      tags: [Comments]
+      x-durum: planlandı
+      summary: Yorum ekle
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, minLength: 1 }
+      responses:
+        '201': { description: Eklendi }
+
+  /api/projects/{id}/files:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Files]
+      x-durum: planlandı
+      summary: Proje dosyaları
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Dosya listesi }
+    post:
+      tags: [Files]
+      x-durum: planlandı
+      summary: Dosya yükle (multipart, tür ve boyut sınırlı)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201': { description: Yüklendi }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /api/files/{id}/download:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Files]
+      x-durum: planlandı
+      summary: Dosya indir (yalnızca proje üyeleri)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Dosya içeriği }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/projects/{id}/reports/progress:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Reports]
+      x-durum: planlandı
+      summary: Proje ilerleme yüzdesi ve kişi bazlı tamamlama
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Rapor }
+
+  /api/projects/{id}/reports/periodic:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Reports]
+      x-durum: planlandı
+      summary: Günlük / haftalık / aylık ilerleme raporu
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: period, in: query, required: true, schema: { type: string, enum: [daily, weekly, monthly] } }
+      responses:
+        '200': { description: Rapor }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, minLength: 2, maxLength: 100, example: Ayşe Yılmaz }
+        email: { type: string, format: email, example: ayse@sektech.com }
+        password: { type: string, minLength: 8, maxLength: 72, description: 'SRS FR-01 — en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter', example: 'Gizli123!' }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: hakan@sektech.com }
+        password: { type: string, example: Password123! }
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: Hakan Koço }
+        email: { type: string, example: hakan@sektech.com }
+        role: { type: string, enum: [Yönetici, Ekip Üyesi] }
+        created_at: { type: string, format: date-time }
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            user: { $ref: '#/components/schemas/User' }
+            token: { type: string, description: JWT (8 saat geçerli) }
+    TaskStatus:
+      type: string
+      enum: [To Do, In Progress, Done]
+    Project:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        owner_id: { type: integer }
+    ProjectInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, maxLength: 150 }
+        description: { type: string }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date, description: start_date'ten önce olamaz }
+    TaskInput:
+      type: object
+      properties:
+        title: { type: string, maxLength: 200 }
+        description: { type: string }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        priority: { type: string, enum: [Low, Medium, High, Critical] }
+        assignee_id: { type: integer, description: Proje üyesi olmalı }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, example: VALIDATION_ERROR }
+            message: { type: string, example: Gönderilen veriler geçersiz. }
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string, example: email }
+                  message: { type: string, example: Geçerli bir e-posta adresi girin. }
+  responses:
+    ValidationError:
+      description: Doğrulama hatası (VALIDATION_ERROR / INVALID_JSON)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Kimlik doğrulaması yok veya geçersiz (UNAUTHORIZED)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: Yetki yok (FORBIDDEN)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Bulunamadı (NOT_FOUND)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Conflict:
+      description: Çakışma (CONFLICT)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    TooManyRequests:
+      description: Aynı IP'den 15 dakikada 5 başarısız giriş denemesi aşıldı (TOO_MANY_REQUESTS). `Retry-After` başlığı bekleme süresini verir.
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    ServiceUnavailable:
+      description: Veri tabanına ulaşılamıyor (SERVICE_UNAVAILABLE)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
