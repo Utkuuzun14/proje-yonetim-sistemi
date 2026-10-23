@@ -74,8 +74,18 @@ proje-yonetim-sistemi/
 
 ## Kurulum
 
-Kurulum adımları teknoloji yığını kesinleştikten sonra (H2) eklenecektir. Hedef, M2 itibarıyla sistemin tek komutla
-(Docker Compose) ayağa kalkmasıdır.
+Frontend önizlemesi için Node.js 22 ile:
+
+```bash
+cd client
+npm ci
+npm run dev
+```
+
+http://127.0.0.1:5173 adresini açın. Test: `npm test`; üretim derlemesi: `npm run build`.
+Giriş/kayıt arayüzleri ve ana yerleşim hazırdır; backend ve gerçek oturum entegrasyonu henüz yoktur.
+Ayrıntılar [client/README.md](client/README.md) ve [frontend teslim notunda](docs/frontend/tasarim-ve-teslim.md).
+Tam sistemin Docker Compose kurulumu backend/veri tabanı çalışmalarına bağlıdır.
 
 ## Çalışma düzeni
 
