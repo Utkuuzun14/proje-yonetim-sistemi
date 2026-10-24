@@ -1,76 +1,33 @@
-# Haftalık İlerleme Raporu #N
+# Haftalık Rapor #N — Sprint N
 
-<!-- Yol haritası Ek A şablonu. Her Pazar Mert tarafından yayımlanır; 9 hafta boyunca aynı yapı korunur.
-     Dosya adı: docs/sprints/rapor-NN.md -->
+<!-- Hocanın formatı: Bu hafta yapılanlar / Haftaya yapılacaklar. Her Pazar Mert yayımlar.
+     Dosya adı: docs/sprints/rapor-NN.md · Kart ve PR numaraları panodan alınır. -->
 
-## Künye
+**Tarih:** GG – GG Ay 2026 · **Hazırlayan:** Mert Yanık · **Kilometre taşı:** MN
 
-| Alan | Değer |
-|---|---|
-| Rapor no | #N |
-| Hafta / Sprint | HN · Sprint N |
-| Tarih aralığı | GG Ay – GG Ay 2026 |
-| Hazırlayan | Mert Yanık |
-| İlgili kilometre taşı | MN · … |
+## Bu hafta yapılanlar
 
-## Sprint hedefi
+| Kişi | Yapılan iş | Kart / PR |
+|---|---|---|
+| Hakan Koço |  | # |
+| Abdulkahhar Türkoğlu |  | # |
+| Mert Yanık |  | # |
+| Ümit Efe Özkaleli |  | # |
+| Mustafa Şahin |  | # |
+| Buğra Durmuş |  | # |
+| Utku Uzun |  | # |
 
-> Hedef cümlesi (yol haritası Bölüm 6'dan)
+## Haftaya yapılacaklar
 
-**Gerçekleşme durumu:** ☐ Tamamlandı · ☐ Kısmen · ☐ Gerçekleşmedi
+| Kişi | Yapılacak iş | Kart |
+|---|---|---|
+| Hakan Koço |  | # |
+| Abdulkahhar Türkoğlu |  | # |
+| Mert Yanık |  | # |
+| Ümit Efe Özkaleli |  | # |
+| Mustafa Şahin |  | # |
+| Buğra Durmuş |  | # |
+| Utku Uzun |  | # |
 
-Açıklama:
-
-## Tamamlanan işler
-
-| Kart | İş | Sorumlu | PR |
-|---|---|---|---|
-| #  |  |  | # |
-
-## Devreden işler
-
-| Kart | İş | Sorumlu | Neden devretti? | Yeni hedef sprint |
-|---|---|---|---|---|
-| #  |  |  |  |  |
-
-## Metrikler
-
-- **Burndown grafiği:** <!-- görsel veya bağlantı -->
-- **Tamamlanan story point:** … / … (planlanan)
-- **Açılan hata sayısı:** … · **Kapanan hata sayısı:** …
-
-## Kişi bazlı katkı
-
-| Ekip üyesi | Tamamlanan görev | Açılan PR | Yapılan review |
-|---|---|---|---|
-| Hakan Koço |  |  |  |
-| Abdulkahhar Türkoğlu |  |  |  |
-| Mert Yanık |  |  |  |
-| Ümit Efe Özkaleli |  |  |  |
-| Mustafa Şahin |  |  |  |
-| Buğra Durmuş |  |  |  |
-| Utku Uzun |  |  |  |
-
-## Riskler ve engeller
-
-| Risk / engel | Durum (Yeni / Güncellendi / Kapandı) | Sahibi | Not |
-|---|---|---|---|
-|  |  |  |  |
-
-## Retrospektif özeti
-
-**İyi gidenler:**
-- 
-
-**Geliştirilecekler:**
-- 
-
-**Gelecek haftanın aksiyonları:**
-- [ ] 
-
-## Gelecek hafta
-
-**Sprint N+1 hedefi:**
-
-**Öne çıkan işler:**
-- 
+<!-- İsteğe bağlı: varsa tek satırla engel/risk notu -->
+**Not / engel:** —
