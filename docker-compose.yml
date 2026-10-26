@@ -1,0 +1,69 @@
+# =============================================================================
+# SEK TECH — Proje Yönetim Platformu
+# Tek Komutla Kurulum Orkestrasyonu (docker-compose.yml) — Sprint 2 (Issue #38)
+# Sorumlu: Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)
+#
+# Çalıştırma:
+#   docker compose up --build -d               → db + server (API: http://localhost:5000/api/docs)
+#   docker compose --profile app up --build -d → db + server + client
+#
+# Not: client/ iskeleti ve Dockerfile'ı henüz eklenmediği için client servisi "app" profilinde.
+# İskelet (#29) gelince profil satırı kaldırılacak.
+#
+# Servisler:
+#   - db:     PostgreSQL 15 (Port 5432) — Otomatik init.sql ve seed.sql kurulumu
+#   - server: Node.js / Express API (Port 5000)
+#   - client: React / Vite Web Ön Yüz (Port 3000)
+# =============================================================================
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sektech-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sektech
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d sektech"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sektech-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgresql://admin:password@db:5432/sektech
+      JWT_SECRET: dev-jwt-secret-key-sektech-2026
+
+  client:
+    profiles: ["app"]   # client/Dockerfile eklenince kaldırılacak (#29)
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sektech-client
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+
+volumes:
+  pgdata:

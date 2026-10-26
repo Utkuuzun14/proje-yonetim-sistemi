@@ -22,6 +22,7 @@ jobs:
       node_dirs: ${{ steps.scan.outputs.node_dirs }}
       python_dirs: ${{ steps.scan.outputs.python_dirs }}
       java_dirs: ${{ steps.scan.outputs.java_dirs }}
+      has_compose: ${{ steps.scan.outputs.has_compose }}
     steps:
       - uses: actions/checkout@v4
       - id: scan
@@ -36,6 +37,7 @@ jobs:
           echo "node_dirs=$(join "${node[@]}")"     >> "$GITHUB_OUTPUT"
           echo "python_dirs=$(join "${py[@]}")"     >> "$GITHUB_OUTPUT"
           echo "java_dirs=$(join "${java[@]}")"     >> "$GITHUB_OUTPUT"
+          if [ -f docker-compose.yml ] && [ -f server/Dockerfile ]; then echo "has_compose=true" >> "$GITHUB_OUTPUT"; else echo "has_compose=false" >> "$GITHUB_OUTPUT"; fi
           echo "Node: ${node[*]:-yok} | Python: ${py[*]:-yok} | Java: ${java[*]:-yok}"
 
   node:
@@ -47,6 +49,23 @@ jobs:
       fail-fast: false
       matrix:
         dir: ${{ fromJSON(needs.detect.outputs.node_dirs) }}
+    # API testleri gerçek PostgreSQL ile koşar (database/init.sql + seed.sql testlerde yüklenir)
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sektech
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d sektech"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://admin:password@localhost:5433/sektech_test
     defaults:
       run:
         working-directory: ${{ matrix.dir }}
@@ -62,9 +81,17 @@ jobs:
       - name: Build
         run: npm run build --if-present
       - name: Test
-        run: npm test --if-present
+        run: |
+          if [ "${{ matrix.dir }}" = "server" ]; then npm run test:coverage; else npm test --if-present; fi
         env:
           CI: true
+      - name: Kapsam raporu
+        if: always() && matrix.dir == 'server' && hashFiles('server/coverage/coverage-summary.json', 'server/coverage/lcov.info') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.dir }}
+          path: ${{ matrix.dir }}/coverage
+          retention-days: 14
 
   python:
     name: Python (${{ matrix.dir }})
@@ -118,16 +145,41 @@ jobs:
             if [ -f gradlew ]; then ./gradlew build; else gradle build; fi
           fi
 
+  # M2 kabul kriteri: "sistem tek komutla kuruluyor" — compose ile ayağa kaldırıp smoke testi yapar
+  compose:
+    name: Tek komutla kurulum (Docker Compose)
+    needs: detect
+    if: needs.detect.outputs.has_compose == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose up
+        run: docker compose up --build -d --wait --wait-timeout 180
+      - name: Smoke testi (health + giriş)
+        run: |
+          curl -fsS http://localhost:5000/api/health
+          curl -fsS -X POST http://localhost:5000/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"hakan@sektech.com","password":"Password123!"}' | grep -q '"token"'
+          curl -fsS -o /dev/null http://localhost:5000/api/docs/
+          echo "Smoke testi geçti ✅"
+      - name: Loglar (hata olursa)
+        if: failure()
+        run: docker compose logs
+      - name: Kapat
+        if: always()
+        run: docker compose down -v
+
   # Branch kurallarında "zorunlu kontrol" olarak bu iş seçilir; adı sabit kalmalı.
   ci-ok:
     name: CI sonucu
-    needs: [detect, node, python, java]
+    needs: [detect, node, python, java, compose]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Tüm işler başarılı mı?
         run: |
-          for r in "${{ needs.detect.result }}" "${{ needs.node.result }}" "${{ needs.python.result }}" "${{ needs.java.result }}"; do
+          for r in "${{ needs.detect.result }}" "${{ needs.node.result }}" "${{ needs.python.result }}" "${{ needs.java.result }}" "${{ needs.compose.result }}"; do
             if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then echo "CI başarısız ($r)"; exit 1; fi
           done
           echo "CI yeşil ✅"
