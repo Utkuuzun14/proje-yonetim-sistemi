@@ -66,8 +66,8 @@ describe("Hesap ekranları", () => {
   });
   it("kısa parolayı reddeder", () => {
     expect(
-      validateAuth({ email: "test@example.com", password: "123" }, false),
-    ).toMatch("8 karakter");
+      validateAuth({ name: "Test User", email: "test@example.com", password: "123" }, true),
+    ).toMatch("8-72 karakter");
   });
   it("başarısız kimlik doğrulama isteğini bildirir", async () => {
     vi.stubEnv("VITE_API_URL", "https://api.example.com/");
@@ -82,7 +82,7 @@ describe("Hesap ekranları", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.example.com/auth/login",
       expect.objectContaining({
-        credentials: "include",
+        credentials: "omit",
         body: JSON.stringify({
           email: "test@example.com",
           password: "password123",

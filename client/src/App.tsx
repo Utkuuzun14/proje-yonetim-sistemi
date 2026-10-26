@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link, NavLink, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Route, Routes, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -14,7 +14,9 @@ import {
   Palette,
 } from "lucide-react";
 import { Button, Card, Field } from "./components";
-import { authenticate, validateAuth } from "./api";
+import { ApiError, validateAuth } from "./api";
+import { SessionProvider, Protected, useSession } from "./live/Session";
+import { LiveWorkspace } from "./live/Projects";
 import { DemoProvider, useDemo } from "./workspace/Store";
 import { people, type PersonId } from "./workspace/model";
 import { Projects, ProjectDetail } from "./workspace/Projects";
@@ -34,7 +36,9 @@ function Brand() {
 function AuthPage({ register = false }: { register?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const { login } = useSession();
+  const navigate = useNavigate();
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -44,14 +48,15 @@ function AuthPage({ register = false }: { register?: boolean }) {
       ...(register ? { name: String(data.get("name") || "") } : {}),
     };
     const validation = validateAuth(fields, register);
-    setSuccess(false);
+    setFieldErrors({});
     setError(validation || "");
     if (validation) return;
     setBusy(true);
     try {
-      await authenticate(register ? "register" : "login", fields);
-      setSuccess(true);
+      await login(register ? "register" : "login", fields);
+      navigate("/uygulama/projeler", { replace: true });
     } catch (err) {
+      if (err instanceof ApiError) setFieldErrors(Object.fromEntries(err.details.map(d => [d.field, d.message])));
       setError(
         err instanceof Error
           ? err.message
@@ -134,6 +139,8 @@ function AuthPage({ register = false }: { register?: boolean }) {
           <form onSubmit={submit} noValidate aria-busy={busy}>
             {register && (
               <Field
+                aria-invalid={!!fieldErrors.name}
+                aria-describedby={fieldErrors.name ? "auth-error-name" : undefined}
                 id="name"
                 name="name"
                 label="Ad soyad"
@@ -144,6 +151,8 @@ function AuthPage({ register = false }: { register?: boolean }) {
               />
             )}
             <Field
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={fieldErrors.email ? "auth-error-email" : undefined}
               id="email"
               name="email"
               type="email"
@@ -159,27 +168,20 @@ function AuthPage({ register = false }: { register?: boolean }) {
               type="password"
               label="Parola"
               autoComplete={register ? "new-password" : "current-password"}
-              minLength={8}
+              minLength={register ? 8 : 1}
               required
               placeholder="En az 8 karakter"
               disabled={busy}
-              aria-describedby="password-hint"
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={fieldErrors.password ? "password-hint auth-error-password" : "password-hint"}
             />
-            <small id="password-hint">Parolan en az 8 karakter olmalı.</small>
+            <small id="password-hint">{register ? "8-72 karakter; büyük/küçük harf, rakam ve özel karakter kullan." : "Hesabının parolasını gir."}</small>
             {error && (
               <p className="alert" role="alert">
                 {error}
               </p>
             )}
-            {success && (
-              <p className="success" role="status">
-                {register
-                  ? "Kayıt isteğin başarıyla tamamlandı."
-                  : "Giriş isteğin başarıyla tamamlandı."}{" "}
-                Oturum ve yetkilendirme akışı backend entegrasyonunda
-                tamamlanacak.
-              </p>
-            )}
+            {Object.entries(fieldErrors).map(([field, text]) => <p key={field} id={`auth-error-${field}`} className="alert">{text}</p>)}
             <Button type="submit" disabled={busy}>
               {busy
                 ? "Lütfen bekle…"
@@ -196,7 +198,7 @@ function AuthPage({ register = false }: { register?: boolean }) {
             </Link>
           </div>
           <p className="form-note">
-            Bu sürümde sunucu entegrasyonu bekleniyor. Önizleme için hesap
+            Gerçek çalışma alanı için giriş yap. Önizleme için hesap
             gerekmez.
           </p>
         </div>
@@ -372,9 +374,10 @@ function DesignSystem() {
     </>
   );
 }
-export default function App() {
+function AppRoutes() {
   return (
     <Routes>
+      <Route path="/uygulama/*" element={<Protected><LiveWorkspace /></Protected>} />
       <Route path="/" element={<AuthPage key="home" />} />
       <Route path="/giris" element={<AuthPage key="login" />} />
       <Route path="/kayit" element={<AuthPage key="register" register />} />
@@ -400,3 +403,5 @@ export default function App() {
     </Routes>
   );
 }
+
+export default function App() { return <SessionProvider><AppRoutes /></SessionProvider>; }

@@ -22,7 +22,7 @@ Tüm kontroller: `npm run check` (ESLint, otomatik testler, TypeScript ve üreti
 - `/onizleme/raporlar`: proje ve kişi bazlı raporlar; gün/hafta/ay tamamlanma filtresi, CSV indirme.
 - `/onizleme/tasarim`: renkler, tipografi ve bileşen örnekleri.
 
-Önizleme gerçek kullanıcı oturumu veya gerçek proje verisi içermez. Sunucu kurulmadan giriş başarılı gösterilmez. Parola veya token tarayıcı depolamasına yazılmaz.
+Önizleme gerçek kullanıcı oturumu veya gerçek proje verisi içermez. Sunucu kurulmadan giriş başarılı gösterilmez. Parola depolanmaz. Gerçek oturum tokenı yalnız sessionStorage içinde tutulur; önizleme oturum gerektirmez.
 
 ## Demo kullanım
 
@@ -32,11 +32,18 @@ Proje/görev/yorumlar `localStorage` içinde `sek-tech-demo-v1` anahtarına kayd
 
 Takvimde örnek görevler **Ekim 2026** içindedir. Kanban'da sürükle-bırak yanında klavye/dokunma için durum seçicisi bulunur. Gantt çubukları seçilen ayla kesişen tarihleri gösterir. Dönem filtresi yalnız tamamlanmış görevlerin tamamlanma tarihine uygulanır; CSV seçilen projelerin tüm görevlerini dışa aktarır.
 
-## API entegrasyonu bekleniyor
+## Gerçek API çalışma alanı (#43)
 
-`.env.example` dosyasını `.env.local` olarak kopyalayın. Backend ekibiyle sözleşme onaylandıktan sonra `VITE_API_URL` değerini ekleyin. Önerilen uç noktalar: `POST /auth/login` (`email`, `password`) ve `POST /auth/register` (`name`, `email`, `password`). Başarılı yanıt 2xx; hatalar 401/409 veya genel hata olarak ele alınır. İstek zaman aşımı 15 saniyedir.
+`.env.example` dosyasını `.env.local` olarak kopyalayıp Vite'ı yeniden başlatın. API tabanı `http://localhost:5000/api` olarak ayarlanır. Backend'in kendi PostgreSQL kurulumu gerekir.
 
-Bu uç noktalar henüz repoda uygulanmamıştır. İstemci cookie tabanlı oturum önerir (`credentials: include`). Backend tarafında HttpOnly/Secure/SameSite, CSRF ve izin verilen CORS origin ayarlanmalı; oturum sorgusu, çıkış ve rol korumaları sözleşme sonrası eklenmelidir. Mevcut ekran yalnızca istek sonucunu bildirir.
+- Giriş/kayıt `{data:{user,token}}` yanıtıyla gerçek çalışma alanına yönlendirir.
+- `/uygulama/projeler` ve `/uygulama/projeler/:id` korunan proje ekranlarıdır.
+- JWT sessionStorage içinde tutulur, isteklerde Bearer başlığıyla iletilir. Cookie kullanılmaz.
+- Yenilemede `/auth/me` doğrulaması; 401'de girişe yönlendirme; 403'te erişim hatası; çıkışta yerel oturum temizliği vardır.
+- Proje listesi/detay/POST/PATCH mevcut OpenAPI sözleşmesine bağlıdır. Proje rotalarının backend #44 kapsamında uygulanması bekleniyor; testler bu yanıtları taklit eder. Eksik servis gerçek başarı olarak gösterilmez.
+- Yalnız Yönetici rolünde proje oluşturma/düzenleme kontrolleri görünür. Sunucu RBAC denetimi ayrıca gereklidir.
+
+Ayrıntılı teslim ve sınırlar: [Sprint 3 entegrasyon notu](../docs/frontend/sprint-3-entegrasyon.md).
 
 ## Yapı
 

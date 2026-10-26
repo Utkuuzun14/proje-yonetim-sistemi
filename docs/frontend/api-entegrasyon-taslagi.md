@@ -1,3 +1,5 @@
+> 26 Ekim 2026: Bu belge önceki öneridir. Uygulanan JWT/Bearer sözleşmesi, sessionStorage kararı ve proje API bağımlılıkları için [Sprint 3 entegrasyon notuna](sprint-3-entegrasyon.md) bakın. Cookie önerisi uygulanmadı.
+
 # Frontend–backend entegrasyon taslağı
 
 Bu belge onaylanmış API sözleşmesi değildir. Backend ekibiyle alan adları, roller, hata biçimi ve kimlik doğrulama yaklaşımı netleştirilmeli.
