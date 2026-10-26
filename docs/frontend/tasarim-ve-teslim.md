@@ -27,12 +27,12 @@ Figma dosyası henüz oluşturulmadı. Ekranlar referans alınabilir. Sayfalar: 
 
 ## Fizibilite geri bildirimi
 
-Wireframe repoda bulunmadı; belirli bir çizimin onaylandığı varsayılmadı. Mobilde sabit genişlikten kaçınma, yetkilerin sunucuda doğrulanması, listelerde sayfalama, Kanban için klavye alternatifi, hata/boş/bekleme durumları ekip incelemesinde kontrol edilmeli.
+26 Ekim güncellemesi: repodaki yedi ekranın metinsel wireframe açıklaması incelendi. Ekran bazlı teknik geri bildirim, kapsam farkları ve bireysel UX değerlendirmesi [UX ve wireframe geri bildirimi](ux-ve-wireframe-geri-bildirimi.md) belgesinde. Figma görselleri incelenmedi; görsel tasarım onayı verilmedi.
 
 ## Açık bağımlılıklar
 
 - #22: ortak UX incelemesi, ekip kararı ve sunum bekleniyor.
-- #29: UI davranış kütüphanesi seçimi ve wireframe geri bildirimi bekleniyor.
+- #29: Radix Label kuruldu ve ortak Field içinde kullanıldı; bileşen envanteri ve metinsel wireframe geri bildirimi tamamlandı. Ekip incelemesi ve kabulü bekleniyor.
 - #36: Figma dosyası ve backend uçtan uca entegrasyonu bekleniyor.
 - #43/#50/#57/#64: frontend demo akışları uygulandı; sunucu yetkileri, gerçek veri ve ekipler arası paylaşım için API entegrasyonu bekleniyor. Bu kartlar tamamlanmış sayılmaz.
 - #71: otomatik kontroller eklendi; gerçek backend, üretim ortamı ve kapsamlı erişilebilirlik testi bekleniyor.

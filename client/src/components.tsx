@@ -3,6 +3,7 @@ import type {
   InputHTMLAttributes,
   ReactNode,
 } from "react";
+import * as Label from "@radix-ui/react-label";
 export function Button(props: ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button {...props} className={`button ${props.className || ""}`} />;
 }
@@ -12,10 +13,10 @@ export function Field({
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: string; id: string }) {
   return (
-    <label className="field" htmlFor={id}>
+    <Label.Root className="field" htmlFor={id}>
       <span>{label}</span>
       <input id={id} {...props} />
-    </label>
+    </Label.Root>
   );
 }
 export function Card({

@@ -24,7 +24,7 @@ React + TypeScript + Vite ile devam edilmesi önerilir. Gerekçe: depodaki mevcu
 
 Kaynaklar: [Material UI](https://mui.com/material-ui/getting-started/), [Radix Primitives](https://www.radix-ui.com/primitives/docs/overview/introduction). Tablo bakım değerlendirmesidir; paket boyutu veya performans ölçümü değildir.
 
-Önerilen karar: mevcut temel bileşenleri korumak; karmaşık menü/seçici ihtiyacı doğduğunda Radix'i bir bileşen üzerinde denemek. Hazır kapsamlı bileşen seti öncelik kazanırsa MUI yeniden değerlendirilebilir. Hiçbiri bu araştırma nedeniyle kurulmadı. Nihai karar ekip onayı bekler.
+Önerilen karar: mevcut temel bileşenleri korumak; karmaşık menü/seçici ihtiyacı doğduğunda Radix'i bir bileşen üzerinde denemek. Hazır kapsamlı bileşen seti öncelik kazanırsa MUI yeniden değerlendirilebilir. 26 Ekim uygulama güncellemesi: Radix Label ortak Field bileşenine bağlandı; kademeli kullanım başladı. Ekip onayı bekleniyor. Bireysel UX bulguları ve ekran bazlı fizibilite [geri bildirim belgesinde](ux-ve-wireframe-geri-bildirimi.md).
 
 ## Rakip UX karşılaştırması
 

@@ -30,7 +30,7 @@ Azure Boards, kartları iş öğelerine ve sütunları işin aşamalarına karş
 - Radix UI: erişilebilir davranış temelleri; görsel tasarım ayrıca geliştirilir.
 - Özel CSS + yerel HTML: küçük form kapsamı için düşük karmaşıklık; ileri bileşenlerde test yükü artar.
 
-Bu teslimde yerel form elemanları, ortak CSS ve Lucide ikonları kullanıldı. MUI/Radix kurulmadı; UI davranış kütüphanesi seçimi ekip kararı olarak açık tutuluyor.
+Bu teslimde yerel form elemanları, ortak CSS ve Lucide ikonları kullanıldı. 26 Ekim güncellemesi: Radix Primitives kademeli kullanım için seçildi; @radix-ui/react-label kuruldu ve ortak Field bileşenine bağlandı. MUI kurulmadı. Ekip kabulü bekleniyor; ayrıntılar [UX ve wireframe geri bildirimi](ux-ve-wireframe-geri-bildirimi.md) içinde.
 
 ## Ortak UX incelemesi için plan
 

@@ -1,6 +1,6 @@
 # SEK TECH frontend
 
-React + TypeScript + Vite. Node.js 22 ve npm gerekir.
+React + TypeScript + Vite. Node.js 22 ve npm gerekir. UI temeli Radix Primitives ile kademeli kurulur: ortak Field bileşeni @radix-ui/react-label kullanır; Button/Card, native dialog ve semantik tablolar mevcut yapıda korunur.
 
 ```sh
 cd client
