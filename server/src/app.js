@@ -26,6 +26,7 @@ function createApp(options = {}) {
   app.use('/api/health', require('./modules/health/health.routes'));
   app.use('/api/auth', require('./modules/auth/auth.routes').createAuthRouter(options));
   app.use('/api/users', require('./modules/users/users.routes'));
+  app.use('/api/projects', require('./modules/projects/projects.routes'));
 
   app.use(notFound);
   app.use(errorHandler);
