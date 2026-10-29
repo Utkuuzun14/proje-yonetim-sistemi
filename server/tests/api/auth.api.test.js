@@ -126,6 +126,14 @@ describe('Korumalı uç noktalar', () => {
     expect((await request(app).get('/api/users/99999').set(auth)).status).toBe(404);
     expect((await request(app).get('/api/users/abc').set(auth)).status).toBe(400);
   });
+
+  test('#102: GET /api/users/:id integer sınırı üstünde → 400 (500 değil)', async () => {
+    const token = await tokenFor();
+    const auth = { Authorization: `Bearer ${token}` };
+    expect((await request(app).get('/api/users/99999999999').set(auth)).status).toBe(400);
+    expect((await request(app).get('/api/users/2147483648').set(auth)).status).toBe(400);
+    expect((await request(app).get('/api/users/2147483647').set(auth)).status).toBe(404);
+  });
 });
 
 describe('Genel', () => {
