@@ -34,6 +34,7 @@ Hata:
 | 403 | `FORBIDDEN` | Giriş yapılmış ama yetki yok (RBAC, Sprint 3) |
 | 404 | `NOT_FOUND` | Kayıt veya uç nokta yok |
 | 409 | `CONFLICT` | Tekil alan çakışması (ör. kayıtlı e-posta) |
+| 413 | `PAYLOAD_TOO_LARGE` | İstek gövdesi 1 MB sınırını aşıyor |
 | 429 | `TOO_MANY_REQUESTS` | Aynı IP'den 15 dk içinde 5 başarısız giriş (SRS 4.2); `Retry-After` başlığı |
 | 500 | `INTERNAL_ERROR` | Beklenmeyen hata — ayrıntı istemciye gönderilmez, sunucu loguna yazılır |
 | 503 | `SERVICE_UNAVAILABLE` | Veri tabanına ulaşılamıyor (`/api/health`) |

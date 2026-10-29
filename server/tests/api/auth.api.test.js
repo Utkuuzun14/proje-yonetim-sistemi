@@ -49,6 +49,14 @@ describe('POST /api/auth/register', () => {
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('INVALID_JSON');
   });
+
+  test('#103: 1 MB üstü gövde → 413 PAYLOAD_TOO_LARGE', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'hakan@sektech.com', password: 'x'.repeat(1.1 * 1024 * 1024) });
+    expect(res.status).toBe(413);
+    expect(res.body.error.code).toBe('PAYLOAD_TOO_LARGE');
+  });
 });
 
 describe('POST /api/auth/login', () => {
