@@ -50,6 +50,13 @@ describe('POST /api/auth/register', () => {
     expect(res.body.error.code).toBe('INVALID_JSON');
   });
 
+  test('#105: gövde nesne yerine dizi → 400, Türkçe mesaj', async () => {
+    const res = await request(app).post('/api/auth/register').send([]);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.details).toEqual([{ field: null, message: 'İstek gövdesi bir JSON nesnesi olmalıdır.' }]);
+  });
+
   test('#103: 1 MB üstü gövde → 413 PAYLOAD_TOO_LARGE', async () => {
     const res = await request(app)
       .post('/api/auth/login')
