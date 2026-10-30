@@ -127,8 +127,8 @@ describe('Korumalı uç noktalar', () => {
     expect(res.status).toBe(401);
   });
 
-  test('GET /api/users: listede şifre özeti yok', async () => {
-    const token = await tokenFor();
+  test('GET /api/users: listede şifre özeti yok (Yönetici)', async () => {
+    const token = await tokenFor('hakan@sektech.com');
     const res = await request(app).get('/api/users').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
     expect(res.body.data.length).toBeGreaterThanOrEqual(7);
