@@ -9,19 +9,27 @@
 -- -----------------------------------------------------------------------------
 INSERT INTO roles (id, name, permissions) VALUES
 (1, 'Yönetici', '{
+    "user:read": true,
+    "user:create": true,
+    "user:assign_role": true,
+    "user:manage": true,
     "project:create": true,
+    "project:read": true,
     "project:update": true,
     "project:delete": true,
-    "user:manage": true,
+    "project:add_member": true,
+    "project:remove_member": true,
     "task:create": true,
+    "task:read": true,
     "task:update": true,
     "task:delete": true,
     "task:assign": true,
     "report:view": true
 }'::jsonb),
 (2, 'Ekip Üyesi', '{
-    "project:view": true,
-    "task:view": true,
+    "user:read": true,
+    "project:read": true,
+    "task:read": true,
     "task:update_status": true,
     "comment:create": true,
     "file:upload": true,
@@ -51,14 +59,16 @@ SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));
 -- 3. PROJELER
 -- -----------------------------------------------------------------------------
 INSERT INTO projects (id, owner_id, name, description, start_date, end_date) VALUES
-(1, 1, 'SEK TECH Proje Yönetim Platformu', 'Azure Boards''tan ilham alan, küçük ve orta ölçekli yazılım ekipleri için web tabanlı proje yönetim sistemi.', '2026-10-05', '2026-12-07')
+(1, 1, 'SEK TECH Proje Yönetim Platformu', 'Azure Boards''tan ilham alan, küçük ve orta ölçekli yazılım ekipleri için web tabanlı proje yönetim sistemi.', '2026-10-05', '2026-12-07'),
+(2, 2, 'Mobil Saha Yönetimi', 'Mobil saha ekipleri için görev takip ve koordinasyon uygulaması.', '2026-10-15', '2026-11-30')
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval('projects_id_seq', (SELECT MAX(id) FROM projects));
 
 -- -----------------------------------------------------------------------------
--- 4. PROJE ÜYELİKLERİ (Tüm Ekip)
+-- 4. PROJE ÜYELİKLERİ
 -- -----------------------------------------------------------------------------
+-- Proje 1 üyeleri (Tüm Ekip)
 INSERT INTO project_members (project_id, user_id) VALUES
 (1, 1),
 (1, 2),
@@ -67,6 +77,12 @@ INSERT INTO project_members (project_id, user_id) VALUES
 (1, 5),
 (1, 6),
 (1, 7)
+ON CONFLICT (project_id, user_id) DO NOTHING;
+
+-- Proje 2 üyeleri (Yalnızca Abdulkahhar ve Ümit Efe - TS-ROL-04 yetki izolasyon testi için)
+INSERT INTO project_members (project_id, user_id) VALUES
+(2, 2),
+(2, 4)
 ON CONFLICT (project_id, user_id) DO NOTHING;
 
 -- -----------------------------------------------------------------------------

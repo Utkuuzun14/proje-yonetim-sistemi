@@ -2,8 +2,8 @@
 
 **Sorumlu:** Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)  
 **Proje:** Proje Yönetim Sistemi (Azure Boards İlhamlı Web Platformu)  
-**Kapsam:** Sprint 0 (H1), Sprint 1 (H2), Sprint 2 (H3)  
-**İlgili GitHub Issue'ları:** [#24](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/24), [#31](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/31), [#38](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/38)
+**Kapsam:** Sprint 0 (H1), Sprint 1 (H2), Sprint 2 (H3), Sprint 3 (H4)  
+**İlgili GitHub Issue'ları:** [#24](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/24), [#31](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/31), [#38](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/38), [#45](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/45)
 
 ---
 
@@ -275,3 +275,73 @@ JOIN users u ON t.assignee_id = u.id
 JOIN projects p ON t.project_id = p.id;
 "
 ```
+
+---
+
+## 5. Sprint 3: Rol, Yetki ve Proje Üyeliği Tabloları (Issue #45)
+
+**Hafta:** H4 · 26 Ekim – 1 Kasım 2026  
+**Kilometre Taşı:** M3 · MVP & ara demo  
+**Hedef:** Rol tabanlı yetkilendirmeyi (RBAC) ve proje oluşturma–düzenleme akışını uçtan uca çalıştırmak.
+
+### 5.1 Şema İyileştirmeleri ve Bütünlük Kısıtları
+
+Sprint 3 kapsamında iş kurallarının ve veri bütünlüğünün doğrudan veritabanı katmanında garantiye alınması amacıyla aşağıdaki iyileştirmeler yapılmıştır:
+
+1. **Tarih Kontrol Kısıtı (`chk_projects_dates`):**
+   - **Kural:** `CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date)`
+   - **Gerekçe:** US-03 ve TS-PRJ-02 kabul kriterlerine göre bitiş tarihi başlangıç tarihinden önce olan projelerin oluşturulması engellenmelidir. Bu kısıt ile hatalı veri girişi veritabanı düzeyinde imkânsız hale getirilmiştir.
+2. **Roller JSONB GIN İndeksi (`idx_roles_permissions`):**
+   - **Kural:** `CREATE INDEX idx_roles_permissions ON roles USING GIN (permissions);`
+   - **Gerekçe:** Kullanıcıların yetki kontrollerinde JSONB içerisindeki izinlerin (`permissions ? 'project:delete'` veya `permissions @> '{"project:delete": true}'`) $O(1)$ maliyetle taranabilmesi sağlanmıştır.
+3. **Proje Tarih ve Listeleme İndeksleri:**
+   - `idx_projects_dates ON projects(start_date, end_date)`: Takvim ve zaman aralığı sorguları için.
+   - `idx_projects_created_at ON projects(created_at DESC)`: Varsayılan proje listelemelerinde sıralama optimizasyonu için.
+
+### 5.2 Standartlaştırılmış RBAC Yetki Matrisi
+
+Sistemdeki rollerin sahip olduğu izinler `roles.permissions` alanında standartlaştırılmış modül:eylem biçiminde yapılandırılmıştır:
+
+| İzin Anahtarı | Yönetici (Admin) | Ekip Üyesi (Member) | Açıklama |
+|---|:---:|:---:|---|
+| `user:read` | ✅ | ✅ | Kullanıcı listesini ve profilleri görüntüleme |
+| `user:create` | ✅ | ❌ | Yeni kullanıcı kaydetme / davet etme |
+| `user:assign_role` | ✅ | ❌ | Kullanıcının rolünü değiştirme |
+| `project:create` | ✅ | ❌ | Yeni proje oluşturma |
+| `project:read` | ✅ | ✅ | Dahil olduğu projeleri görüntüleme |
+| `project:update` | ✅ | ❌ | Proje bilgilerini ve tarihlerini düzenleme |
+| `project:delete` | ✅ | ❌ | Projeyi silme (yalnızca Yönetici) |
+| `project:add_member` | ✅ | ❌ | Projeye üye ekleme |
+| `project:remove_member`| ✅ | ❌ | Projeden üye çıkarma |
+| `task:create` | ✅ | ❌ | Görev açma (Sprint 4) |
+| `task:read` | ✅ | ✅ | Görevleri listeleme ve detay görme |
+| `task:update_status` | ✅ | ✅ | Görevin durumunu değiştirme (To Do -> In Progress -> Done) |
+| `comment:create` | ✅ | ✅ | Göreve yorum yazma |
+| `file:upload` | ✅ | ✅ | Projeye doküman yükleme |
+| `report:view` | ✅ | ❌ | Tüm proje ve ekip metriklerini görme |
+| `report:view_self` | ✅ | ✅ | Kendi görev karnesini görme |
+
+### 5.3 Backend Sorgu & Repository Desteği (Mustafa - #44)
+
+Mustafa'nın Sprint 3 Proje API'si ve RBAC middleware geliştirimini hızlandırmak amacıyla repository katmanı hazırlanmıştır:
+
+1. **`server/src/modules/projects/projects.repository.js`:**
+   - `create({ name, description, startDate, endDate, ownerId })`: Projeyi oluşturur; eş zamanlı transaction içinde proje sahibini `project_members` tablosuna ekler.
+   - `findById(id)`: Projeyi sahibi ve üye sayısıyla (`member_count`) birlikte çeker.
+   - `list({ userId, isAdmin })`: Yetki bazlı listeleme yapar. Yöneticiye tüm projeleri; üyeye yalnızca üyesi olduğu projeleri döner (`TS-ROL-04` izolasyonu).
+   - `update(id, data)`: Dinamik parametreli güvenli güncelleme yapar.
+   - `delete(id)`: Projeyi ve bağlı tüm kayıtları siler.
+   - `addMember(projectId, userId)` / `removeMember(projectId, userId)`: Üyelik yönetimi.
+   - `listMembers(projectId)`: Proje üyelerini rolleriyle döner.
+   - `isMember(projectId, userId)` / `isOwner(projectId, userId)`: Hızlı erişim kontrol boolean sorguları.
+
+2. **`server/src/modules/users/users.repository.js` Güncellemeleri:**
+   - `updateRole(userId, roleName)`: Kullanıcıya rol atama sorgusu.
+   - `listRoles()`: Sistemdeki rolleri ve izin JSONB matrisini listeleme.
+   - `getRolePermissions(roleName)`: RBAC middleware'inin tek sorguda izin doğrulaması yapmasını sağlayan yardımcı fonksiyon.
+   - `findByIdWithPermissions(id)`: Kullanıcının rolünü ve izinlerini birleştirerek getiren fonksiyon.
+
+### 5.4 Test Senaryoları Uyumluluğu
+
+- **TS-PRJ-02 (Geçersiz Proje Tarihleri):** `chk_projects_dates` kısıtı ile bitiş < başlangıç olan durumlar veritabanında engellenir.
+- **TS-ROL-04 (Proje İzolasyonu):** Tohum verisine eklenen 2. Proje (`Mobil Saha Yönetimi`) ve üyelik ayrımı sayesinde yetkisiz üyenin başka projeyi görememesi doğrulanabilir.

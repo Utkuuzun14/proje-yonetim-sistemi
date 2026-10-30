@@ -53,7 +53,8 @@ CREATE TABLE projects (
     description TEXT,
     start_date  DATE,
     end_date    DATE,
-    created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_projects_dates CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date)
 );
 
 COMMENT ON TABLE projects IS 'Yönetilen yazılım projeleri';
@@ -138,9 +139,12 @@ COMMENT ON TABLE files IS 'Projeye yüklenen dokümanlar ve ekler';
 -- -----------------------------------------------------------------------------
 -- İNDEKSLER (Performans ve Sorgu Optimizasyonu)
 -- -----------------------------------------------------------------------------
+CREATE INDEX idx_roles_permissions ON roles USING GIN (permissions);
 CREATE INDEX idx_users_role_id ON users(role_id);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_projects_owner ON projects(owner_id);
+CREATE INDEX idx_projects_dates ON projects(start_date, end_date);
+CREATE INDEX idx_projects_created_at ON projects(created_at DESC);
 CREATE INDEX idx_project_members_user ON project_members(user_id);
 CREATE INDEX idx_tasks_project ON tasks(project_id);
 CREATE INDEX idx_tasks_assignee ON tasks(assignee_id);
