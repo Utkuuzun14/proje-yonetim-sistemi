@@ -48,16 +48,19 @@ Her kilometre taşı GitHub'da aynı adla bir milestone'dur; haftalık kartlar i
 
 ## Teknoloji yığını
 
-> **Teknoloji yığını 8 Ekim karar toplantısında kesinleşecek.**
-> Metodoloji, teknoloji yığını, veri tabanı ve takip aracı kararları yol haritasının 11. bölümündeki seçeneklere göre verilir
-> ve [karar tutanağına](docs/sablonlar/karar-tutanagi.md) işlenir. Bu bölüm ve kurulum adımları karardan sonra güncellenecektir.
+Ekip Sprint 0–2'de aşağıdaki yığınla ilerlemektedir; repodaki kod ve CI bu yığına göre kuruludur.
 
-| Karar | Değerlendirilen seçenekler |
-|---|---|
-| Metodoloji | Scrum (1 haftalık sprint) · Kanban · Scrumban |
-| Teknoloji yığını | React + Node.js · Django + React · Spring Boot + Angular |
-| Veri tabanı | PostgreSQL · MySQL · MongoDB |
-| Takip aracı | GitHub Projects · Jira · Trello |
+| Katman | Teknoloji | Durum |
+|---|---|---|
+| Metodoloji | Scrum — 1 haftalık sprint (Sprint 0–8) | Uygulanıyor |
+| Ön yüz | React 19 + TypeScript + Vite | Prototip: #93 |
+| Arka yüz | Node.js 20 + Express 4, JWT, Swagger (OpenAPI 3) | `develop`'ta ([teknoloji notu](docs/backend/teknoloji-notu-ve-mimari.md)) |
+| Veri tabanı | PostgreSQL 15 | `develop`'ta ([database/](database/)) |
+| Takip aracı | GitHub Projects + Issues | Uygulanıyor |
+| CI | GitHub Actions — her PR'da test + tek komutla kurulum smoke testi | Uygulanıyor |
+
+> 8 Ekim karar toplantısının resmî tutanağı ([karar-tutanagi.md](docs/sablonlar/karar-tutanagi.md)) henüz
+> doldurulmamıştır; yukarıdaki tablo fiilen kullanılan yığını gösterir. Tutanak işlendiğinde bu not kaldırılacaktır.
 
 ## Klasör yapısı
 
@@ -74,18 +77,28 @@ proje-yonetim-sistemi/
 
 ## Kurulum
 
-Frontend önizlemesi için Node.js 22 ile:
+Gereksinim: [Docker Desktop](https://www.docker.com/products/docker-desktop/) (veya Docker + Compose).
 
 ```bash
-cd client
-npm ci
-npm run dev
+git clone https://github.com/Utkuuzun14/proje-yonetim-sistemi.git
+cd proje-yonetim-sistemi
+docker compose up --build -d
 ```
 
-http://127.0.0.1:5173 adresini açın. Test: `npm test`; üretim derlemesi: `npm run build`.
-Giriş/kayıt arayüzleri ve ana yerleşim hazırdır; backend ve gerçek oturum entegrasyonu henüz yoktur.
-Ayrıntılar [client/README.md](client/README.md) ve [frontend teslim notunda](docs/frontend/tasarim-ve-teslim.md).
-Tam sistemin Docker Compose kurulumu backend/veri tabanı çalışmalarına bağlıdır.
+Tek komutla **veri tabanı + API** ayağa kalkar; tablolar ve örnek veri otomatik yüklenir.
+
+| Ne | Adres |
+|---|---|
+| API dokümanı (Swagger) | http://localhost:5000/api/docs |
+| Sağlık kontrolü | http://localhost:5000/api/health |
+| PostgreSQL (DBeaver, pgAdmin…) | `localhost:5433` · kullanıcı `admin` · şifre `password` · VT `sektech` |
+
+Örnek kullanıcılar: `hakan@sektech.com` (Yönetici), `utku@sektech.com` (Ekip Üyesi) … şifre **`Password123!`**
+
+Kapatmak için `docker compose down` (verileri de silmek için `docker compose down -v`).
+Ön yüz eklendiğinde `docker compose --profile app up --build -d` tüm sistemi kaldırır.
+Geliştirici kurulumu ve testler: [server/README.md](server/README.md).
+
 
 ## Çalışma düzeni
 

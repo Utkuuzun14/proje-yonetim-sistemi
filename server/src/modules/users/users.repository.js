@@ -29,6 +29,26 @@ module.exports = {
     return rows;
   },
 
+  /** Kullanıcının güncel rolü ve izinleri (RBAC). Kullanıcı yoksa null; rolü yoksa name/permissions null. */
+  async findRoleWithPermissions(userId) {
+    const { rows } = await db.query(
+      `SELECT r.name, r.permissions FROM users u LEFT JOIN roles r ON r.id = u.role_id WHERE u.id = $1`,
+      [userId],
+    );
+    return rows[0] || null;
+  },
+
+  async updateRole(id, roleName) {
+    const { rows } = await db.query(
+      `WITH updated AS (
+         UPDATE users SET role_id = (SELECT id FROM roles WHERE name = $2) WHERE id = $1 RETURNING *
+       )
+       SELECT ${PUBLIC_COLUMNS} FROM updated u LEFT JOIN roles r ON r.id = u.role_id`,
+      [id, roleName],
+    );
+    return rows[0] || null;
+  },
+
   async create({ name, email, passwordHash, roleName }) {
     const { rows } = await db.query(
       `WITH inserted AS (
