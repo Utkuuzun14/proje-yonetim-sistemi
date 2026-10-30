@@ -473,6 +473,9 @@ components:
     Conflict:
       description: Çakışma (CONFLICT)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    PayloadTooLarge:
+      description: İstek gövdesi 1 MB sınırını aşıyor (PAYLOAD_TOO_LARGE)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
     TooManyRequests:
       description: Aynı IP'den 15 dakikada 5 başarısız giriş denemesi aşıldı (TOO_MANY_REQUESTS). `Retry-After` başlığı bekleme süresini verir.
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }

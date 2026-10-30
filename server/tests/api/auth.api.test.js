@@ -49,6 +49,21 @@ describe('POST /api/auth/register', () => {
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('INVALID_JSON');
   });
+
+  test('#105: gövde nesne yerine dizi → 400, Türkçe mesaj', async () => {
+    const res = await request(app).post('/api/auth/register').send([]);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
+    expect(res.body.error.details).toEqual([{ field: null, message: 'İstek gövdesi bir JSON nesnesi olmalıdır.' }]);
+  });
+
+  test('#103: 1 MB üstü gövde → 413 PAYLOAD_TOO_LARGE', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'hakan@sektech.com', password: 'x'.repeat(1.1 * 1024 * 1024) });
+    expect(res.status).toBe(413);
+    expect(res.body.error.code).toBe('PAYLOAD_TOO_LARGE');
+  });
 });
 
 describe('POST /api/auth/login', () => {
@@ -125,6 +140,14 @@ describe('Korumalı uç noktalar', () => {
     const auth = { Authorization: `Bearer ${token}` };
     expect((await request(app).get('/api/users/99999').set(auth)).status).toBe(404);
     expect((await request(app).get('/api/users/abc').set(auth)).status).toBe(400);
+  });
+
+  test('#102: GET /api/users/:id integer sınırı üstünde → 400 (500 değil)', async () => {
+    const token = await tokenFor();
+    const auth = { Authorization: `Bearer ${token}` };
+    expect((await request(app).get('/api/users/99999999999').set(auth)).status).toBe(400);
+    expect((await request(app).get('/api/users/2147483648').set(auth)).status).toBe(400);
+    expect((await request(app).get('/api/users/2147483647').set(auth)).status).toBe(404);
   });
 });
 
