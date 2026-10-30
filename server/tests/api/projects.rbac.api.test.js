@@ -3,8 +3,8 @@
  * Kart #46 — Rol, yetki ve proje API testleri (Sprint 3)
  *
  * Bu testler #44'teki (Mustafa) uç noktalardan ÖNCE, API sözleşmesi v0.5'e
- * (server/src/docs/openapi.yaml) ve SRS FR-03/04/05'e göre yazılmıştır.
- * #44 birleşene kadar kırmızıdır; uç noktalar sözleşmeye uyduğunda yeşile döner.
+ * (server/src/docs/openapi.yaml) ve SRS FR-03/04/05'e göre yazılmıştır; #44'ün kabul testleridir.
+ * #109 (29 Ekim) ile hepsi yeşil.
  *
  * Varsayımlar (sözleşmede açık değilse docs/backend/api-sozlesmesi.md §1):
  *  - Tüm başarılı yanıtlar { data: ... } biçimindedir; POST /projects yeni projeyi döner.
@@ -155,9 +155,14 @@ describe('Proje güncelleme ve silme', () => {
     expect(res.status).toBe(400);
   });
 
-  // ⚠ Sözleşme ile SRS çelişiyor: openapi.yaml "Projeyi güncelle (Yönetici)" diyor,
-  // SRS FR-03 tablosu "Ekip Üyesi yalnızca üyesi olduğu projeyi günceller" diyor. Karar: #96.
-  test.todo('Ekip Üyesi üyesi olduğu projeyi güncelleyebilir mi? (karar bekleniyor, #96)');
+  // #96 Karar 8: proje düzenleme yalnızca Yönetici'de (API sözleşmesi + FR-04 geçerli; SRS tablosu v1.1'de düzeltilecek)
+  test('Ekip Üyesi üyesi olduğu projeyi de güncelleyemez → 403 ve proje değişmez (#96 Karar 8)', async () => {
+    const before = await request(app).get('/api/projects/1').set(auth(admin.token));
+    const res = await request(app).patch('/api/projects/1').set(auth(member.token)).send({ name: 'Üye değiştirdi' });
+    expect(res.status).toBe(403);
+    const after = await request(app).get('/api/projects/1').set(auth(admin.token));
+    expect(after.body.data.name).toBe(before.body.data.name);
+  });
 
   test('TS-ROL-02: Ekip Üyesi proje silemez → 403 ve proje silinmez', async () => {
     const res = await request(app).delete('/api/projects/1').set(auth(member.token));
@@ -214,10 +219,10 @@ describe('Proje üyeliği (FR-05)', () => {
   });
 });
 
-describe('Kullanıcı yönetimi (Sprint 3 teslimatı: "Yönetici kullanıcı ekleyip rol atayabiliyor")', () => {
-  // Bu uç noktalar API sözleşmesi v0.5'te henüz tanımlı değil; #44'te sözleşmeye eklenince yazılacak.
-  test.todo('Yönetici yeni kullanıcı ekler → 201');
-  test.todo('Yönetici kullanıcının rolünü değiştirir → 200');
-  test.todo('Ekip Üyesi rol değiştiremez → 403 (FR-03 madde 1)');
-  test.todo('Ekip Üyesi kullanıcı listesini göremez → 403 (bkz. hata kaydı)');
+// Kullanıcı ekleme, rol atama ve kullanıcı listesinin Yönetici'ye kısıtlanması (#104):
+// tests/api/users.admin.api.test.js (#109, Mustafa) kapsıyor; burada tekrarlanmadı.
+
+describe('Bilinen açık hatalar', () => {
+  // #110: Ekip Üyesi GET /api/users/:id ile diğer kullanıcıların e-postasını görebiliyor. Düzeltilince gerçek teste çevrilecek.
+  test.todo('Ekip Üyesi başka bir kullanıcının detayını göremez → 403/404 (#110)');
 });
