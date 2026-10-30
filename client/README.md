@@ -10,7 +10,7 @@ npm run dev
 
 Tarayıcı: http://127.0.0.1:5173. Kontroller: `npm test` ve `npm run build`.
 
-Tüm kontroller: `npm run check` (ESLint, otomatik testler, TypeScript ve üretim derlemesi). GitHub `Frontend` iş akışı client değişikliklerinde aynı kontrolleri Node.js 22 üzerinde çalıştırır. Erişilebilirlik testleri semantik/ARIA denetimleridir; renk kontrastını, gerçek odak davranışını ve görsel düzeni doğrulamaz.
+Tüm kontroller: `npm run check` (ESLint, otomatik testler, TypeScript ve üretim derlemesi). Ana CI içindeki Node (client) işi bu kontrolleri Node.js 22 üzerinde çalıştırır; yinelenen frontend workflow kaldırıldı. Erişilebilirlik testleri semantik/ARIA denetimleridir; renk kontrastını, gerçek odak davranışını ve görsel düzeni doğrulamaz.
 
 ## Ekranlar
 
@@ -40,7 +40,7 @@ Takvimde örnek görevler **Ekim 2026** içindedir. Kanban'da sürükle-bırak y
 - `/uygulama/projeler` ve `/uygulama/projeler/:id` korunan proje ekranlarıdır.
 - JWT sessionStorage içinde tutulur, isteklerde Bearer başlığıyla iletilir. Cookie kullanılmaz.
 - Yenilemede `/auth/me` doğrulaması; 401'de girişe yönlendirme; 403'te erişim hatası; çıkışta yerel oturum temizliği vardır.
-- Proje listesi/detay/POST/PATCH mevcut OpenAPI sözleşmesine bağlıdır. Proje rotalarının backend #44 kapsamında uygulanması bekleniyor; testler bu yanıtları taklit eder. Eksik servis gerçek başarı olarak gösterilmez.
+- Proje listesi/detay/POST/PATCH mevcut OpenAPI sözleşmesine bağlıdır. Proje rotaları backend #109 ile eklendi. UI testleri kontrollü yanıtlar, Compose CI testi gerçek PostgreSQL ve nginx proxy kullanır. Eksik servis gerçek başarı olarak gösterilmez.
 - Yalnız Yönetici rolünde proje oluşturma/düzenleme kontrolleri görünür. Sunucu RBAC denetimi ayrıca gereklidir.
 
 Ayrıntılı teslim ve sınırlar: [Sprint 3 entegrasyon notu](../docs/frontend/sprint-3-entegrasyon.md).
@@ -55,3 +55,7 @@ Ayrıntılı teslim ve sınırlar: [Sprint 3 entegrasyon notu](../docs/frontend/
 - `src/workspace/`: veri modeli, yerel demo deposu, proje/görev/takvim/rapor/dosya ekranları ve testleri.
 
 Tasarım ve teslim kapsamı: `docs/frontend/`.
+
+## Docker ile tam sistem
+
+Repo kökünde docker compose up --build -d çalıştırın; arayüz http://localhost:3000 adresindedir. Çok aşamalı build Vite çıktısını nginx sunucusuna kopyalar. API tabanı build sırasında /api olarak ayarlanır. Yerel .env dosyaları Docker imajına alınmaz. Compose smoke testi scripts/compose-smoke.mjs içinde; tarayıcı görsel testi değildir.

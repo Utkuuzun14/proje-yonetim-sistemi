@@ -85,10 +85,11 @@ cd proje-yonetim-sistemi
 docker compose up --build -d
 ```
 
-Tek komutla **veri tabanı + API** ayağa kalkar; tablolar ve örnek veri otomatik yüklenir.
+Tek komutla **veri tabanı + API + arayüz** ayağa kalkar; tablolar ve örnek veri boş volume ilk oluşturulurken otomatik yüklenir.
 
 | Ne | Adres |
 |---|---|
+| Arayüz | http://localhost:3000 |
 | API dokümanı (Swagger) | http://localhost:5000/api/docs |
 | Sağlık kontrolü | http://localhost:5000/api/health |
 | PostgreSQL (DBeaver, pgAdmin…) | `localhost:5433` · kullanıcı `admin` · şifre `password` · VT `sektech` |
@@ -96,7 +97,7 @@ Tek komutla **veri tabanı + API** ayağa kalkar; tablolar ve örnek veri otomat
 Örnek kullanıcılar: `hakan@sektech.com` (Yönetici), `utku@sektech.com` (Ekip Üyesi) … şifre **`Password123!`**
 
 Kapatmak için `docker compose down` (verileri de silmek için `docker compose down -v`).
-Ön yüz eklendiğinde `docker compose --profile app up --build -d` tüm sistemi kaldırır.
+Arayüz nginx üzerinden servis edilir; `/api` istekleri aynı origin üzerinden backend servisine aktarılır. Ek profil veya frontend `.env` dosyası gerekmez. SPA adresleri yenilenebilir. Yerel geliştirme için [client/README.md](client/README.md) belgesine bakın.
 Geliştirici kurulumu ve testler: [server/README.md](server/README.md).
 
 

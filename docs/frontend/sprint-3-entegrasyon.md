@@ -1,3 +1,5 @@
+> 30 Ekim güncellemesi: #109 ile proje/RBAC uç noktaları develop dalına eklendi ve bu dala alındı. Önceki bağımlılık notları tarihsel durumdur. Güncel Docker ve gerçek API doğrulama kapsamı [teslim kontrolünde](teslim-kontrolu.md).
+
 # Sprint 3 frontend teslimi - #43
 
 Tarih: 26 Ekim 2026. Kapsam: 26 Ekim - 1 Kasım, proje ekranları ve role göre arayüz.
