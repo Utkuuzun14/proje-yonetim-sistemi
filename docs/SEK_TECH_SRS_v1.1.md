@@ -18,331 +18,331 @@ React istemci, Node/Express API ve PostgreSQL kullanılır. Kimlik doğrulama Be
 
 ## 3. Fonksiyonel Gereksinimler
 
-Aşağıda numaralandırılan fonksiyonel gereksinimler, MoSCoW önceliklendirme standardına göre tasnif edilmiş ve doğrudan doğrulanabilir kabul kriterleri (Acceptance Criteria) ile donatılmıştır. 
-## 3.1 Modül 1: Kullanıcı ve Rol Yönetimi (RBAC) 
-### FR-01: Kullanıcı Kayıt ve Hesap Yönetimi 
+Aşağıda numaralandırılan fonksiyonel gereksinimler, MoSCoW önceliklendirme standardına göre tasnif edilmiş ve doğrudan doğrulanabilir kabul kriterleri (Acceptance Criteria) ile donatılmıştır.
+## 3.1 Modül 1: Kullanıcı ve Rol Yönetimi (RBAC)
+### FR-01: Kullanıcı Kayıt ve Hesap Yönetimi
 
 
--  Öncelik: [MUST] 
- 
+-  Öncelik: [MUST]
 
 
--  Gereksinim Tanımı: Sistem; kullanıcıların e-posta, parola ve tek name alanında ad soyad bilgileri ile yeni hesap oluşturabilmelerini ve profil bilgilerini güncelleyebilmelerini sağlamalıdır. 
+
+-  Gereksinim Tanımı: Sistem; kullanıcıların e-posta, parola ve tek name alanında ad soyad bilgileri ile yeni hesap oluşturabilmelerini ve profil bilgilerini güncelleyebilmelerini sağlamalıdır.
 
 
--  Kabul Kriterleri: 
+-  Kabul Kriterleri:
 
-1. E-posta adresi formatı RFC 5322 standardına uygun olmalı ve sistem genelinde benzersiz (unique) olmalıdır. 
+1. E-posta adresi formatı RFC 5322 standardına uygun olmalı ve sistem genelinde benzersiz (unique) olmalıdır.
 
-2. Parola güvenliği için en az 8 karakter uzunluğu, en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içerme şartı zorunlu tutulmalıdır. 
+2. Parola güvenliği için en az 8 karakter uzunluğu, en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içerme şartı zorunlu tutulmalıdır.
 
-3. Yeni kaydedilen her kullanıcı varsayılan olarak sistem düzeyinde Member rolüyle başlatılmalı ve HTTP 201 Created durum kodu ile yanıt dönülmelidir. 
-### FR-02: Güvenli Kimlik Doğrulama ve Durumsuz Token Tahsisi 
-
-
--  Öncelik: [MUST] 
- 
+3. Yeni kaydedilen her kullanıcı varsayılan olarak sistem düzeyinde Member rolüyle başlatılmalı ve HTTP 201 Created durum kodu ile yanıt dönülmelidir.
+### FR-02: Güvenli Kimlik Doğrulama ve Durumsuz Token Tahsisi
 
 
--  Gereksinim Tanımı: Kullanıcılar kayıtlı e-posta ve parola ikilisiyle sisteme giriş yapabilmeli; başarılı doğrulamada sistem istemciye JWT tabanlı erişim belirteçleri tahsis etmelidir. 
+-  Öncelik: [MUST]
 
 
--  Kabul Kriterleri: 
 
-1. Parolalar veri tabanında hiçbir koşulda açık metin olarak tutulmamalı; bcrypt algoritması kullanılarak minimum 12 tuzlama (salt rounds) maliyetiyle özetlenmelidir. 
-
-2. Başarılı doğrulamada sunucu tek bir 8 saatlik JWT üretir; refresh token yoktur. Yanıt data.token ve data.user alanlarını içerir. Süre dolunca yeniden giriş gerekir (#96, Karar 3). 
-
-3. Geçersiz kimlik bilgisi girişlerinde sistem kullanıcı adı veya parola ayrımı belirtmeksizin jenerik "Kimlik doğrulama başarısız" mesajıyla HTTP 401 Unauthorized dönmelidir. 
-### FR-03: Rol Tabanlı Erişim Denetimi ve Yetki İzolasyonu 
+-  Gereksinim Tanımı: Kullanıcılar kayıtlı e-posta ve parola ikilisiyle sisteme giriş yapabilmeli; başarılı doğrulamada sistem istemciye JWT tabanlı erişim belirteçleri tahsis etmelidir.
 
 
--  Öncelik: [MUST] 
- 
+-  Kabul Kriterleri:
+
+1. Parolalar veri tabanında hiçbir koşulda açık metin olarak tutulmamalı; bcrypt algoritması kullanılarak minimum 12 tuzlama (salt rounds) maliyetiyle özetlenmelidir.
+
+2. Başarılı doğrulamada sunucu tek bir 8 saatlik JWT üretir; refresh token yoktur. Yanıt data.token ve data.user alanlarını içerir. Süre dolunca yeniden giriş gerekir (#96, Karar 3).
+
+3. Geçersiz kimlik bilgisi girişlerinde sistem kullanıcı adı veya parola ayrımı belirtmeksizin jenerik "Kimlik doğrulama başarısız" mesajıyla HTTP 401 Unauthorized dönmelidir.
+### FR-03: Rol Tabanlı Erişim Denetimi ve Yetki İzolasyonu
 
 
--  Gereksinim Tanımı: Platform; Admin ve Member sistem rollerini desteklemeli, API ara katmanlarında (middleware) yetki kontrolü uygulayarak yetkisiz istekleri engellemelidir. 
+-  Öncelik: [MUST]
 
 
--  Kabul Kriterleri: 
 
-1. Member rolüne sahip bir kullanıcının doğrudan proje silme (DELETE /api/projects/:id) veya kullanıcı rolünü yükseltme yönündeki tüm istekleri sunucu tarafında HTTP 403 Forbidden durum koduyla reddedilmelidir. 
+-  Gereksinim Tanımı: Platform; Admin ve Member sistem rollerini desteklemeli, API ara katmanlarında (middleware) yetki kontrolü uygulayarak yetkisiz istekleri engellemelidir.
 
-2. Yalnızca Admin kullanıcılar sistem düzeyinde yeni proje oluşturma, proje silme ve kullanıcıların yetki seviyelerini güncelleme hakkına sahip olmalıdır. 
 
-3. Proje bazlı veri işlemlerinde, kullanıcının o projenin aktif bir üyesi olup olmadığı kontrol edilmeli; proje üyesi olmayan Member için proje okuması 404, yönetim işlemleri 403 döner. Diğer modüllerin yanıtları dondurulmuş API sözleşmesinden izlenir. 
- 
+-  Kabul Kriterleri:
+
+1. Member rolüne sahip bir kullanıcının doğrudan proje silme (DELETE /api/projects/:id) veya kullanıcı rolünü yükseltme yönündeki tüm istekleri sunucu tarafında HTTP 403 Forbidden durum koduyla reddedilmelidir.
+
+2. Yalnızca Admin kullanıcılar sistem düzeyinde yeni proje oluşturma, proje silme ve kullanıcıların yetki seviyelerini güncelleme hakkına sahip olmalıdır.
+
+3. Proje bazlı veri işlemlerinde, kullanıcının o projenin aktif bir üyesi olup olmadığı kontrol edilmeli; proje üyesi olmayan Member için proje okuması 404, yönetim işlemleri 403 döner. Diğer modüllerin yanıtları dondurulmuş API sözleşmesinden izlenir.
+
 Yetki özeti (#96, Karar 8): Yönetici proje oluşturur, düzenler, siler ve üyelikleri yönetir; kullanıcı rolünü değiştirir. Ekip Üyesi bunları yapamaz. Üye yalnızca dahil olduğu projenin verisini okur; görev, dosya ve yorum işlemlerinde proje üyeliği denetlenir. Arşivleme henüz uygulanmış bir uç nokta değildir.
-## 3.2 Modül 2: Proje ve Görev Yönetimi 
-### FR-04: Proje Yaşam Döngüsü Yönetimi (CRUD) 
+## 3.2 Modül 2: Proje ve Görev Yönetimi
+### FR-04: Proje Yaşam Döngüsü Yönetimi (CRUD)
 
 
--  Öncelik: [MUST] 
- 
+-  Öncelik: [MUST]
 
 
--  Gereksinim Tanımı: Sistem; yöneticilerin proje oluşturmasına, güncellemesine, listelemesine ve ilişkisel bütünlüğü koruyarak silmesine olanak tanımalıdır. 
 
+-  Gereksinim Tanımı: Sistem; yöneticilerin proje oluşturmasına, güncellemesine, listelemesine ve ilişkisel bütünlüğü koruyarak silmesine olanak tanımalıdır.
 
--  Kabul Kriterleri: 
 
-1. Proje oluşturulurken Proje adı name alanında 1-150 karakter olmalıdır. Açıklama en fazla 5000 karakter; açıklama ve YYYY-MM-DD tarih alanları isteğe bağlı veya null olabilir. 
+-  Kabul Kriterleri:
 
-2. Bitiş tarihi, başlangıç tarihinden kronolojik olarak önce seçilememeli; geçersiz seçimlerde HTTP 400 Bad Request dönülmelidir. 
+1. Proje oluşturulurken Proje adı name alanında 1-150 karakter olmalıdır. Açıklama en fazla 5000 karakter; açıklama ve YYYY-MM-DD tarih alanları isteğe bağlı veya null olabilir.
 
-3. Proje silindiğinde projeye bağlı görevler, dosya meta verileri ve durum logları kaskad (CASCADE) silme mantığıyla veya mantıksal silme (soft-delete) bayrağıyla tutarlı biçimde yönetilmelidir. 
-### FR-05: Çoktan-Çoka Proje Üye Atama Mekanizması 
+2. Bitiş tarihi, başlangıç tarihinden kronolojik olarak önce seçilememeli; geçersiz seçimlerde HTTP 400 Bad Request dönülmelidir.
 
+3. Proje silindiğinde projeye bağlı görevler, dosya meta verileri ve durum logları kaskad (CASCADE) silme mantığıyla veya mantıksal silme (soft-delete) bayrağıyla tutarlı biçimde yönetilmelidir.
+### FR-05: Çoktan-Çoka Proje Üye Atama Mekanizması
 
--  Öncelik: [MUST] 
- 
 
+-  Öncelik: [MUST]
 
--  Gereksinim Tanımı: Sistem; kullanıcılar ile projeler arasında çoktan-çoka (M:N) ilişki tesis edebilmeli, bir kullanıcının birden çok projede yer almasına izin vermelidir. 
 
 
--  Kabul Kriterleri: 
+-  Gereksinim Tanımı: Sistem; kullanıcılar ile projeler arasında çoktan-çoka (M:N) ilişki tesis edebilmeli, bir kullanıcının birden çok projede yer almasına izin vermelidir.
 
-1. Admin kullanıcısı, kayıtlı kullanıcılar havuzundan seçilen hesapları projeye üye olarak ekleyebilmelidir. 
 
-2. Aynı kullanıcı aynı projeye birden fazla kez üye olarak eklenemez (Composite Unique Index denetimi). 
+-  Kabul Kriterleri:
 
-3. Projeden çıkarılan bir kullanıcının geçmişte tamamladığı görevlerdeki atama kayıtları ve denetim logları sistem bütünlüğü açısından silinmemeli, arşivlenmiş olarak korunmalıdır. 
-### FR-06: Görev (Task/Issue) Oluşturma ve Detay Yönetimi 
+1. Admin kullanıcısı, kayıtlı kullanıcılar havuzundan seçilen hesapları projeye üye olarak ekleyebilmelidir.
 
+2. Aynı kullanıcı aynı projeye birden fazla kez üye olarak eklenemez (Composite Unique Index denetimi).
 
--  Öncelik: [MUST] 
- 
+3. Projeden çıkarılan bir kullanıcının geçmişte tamamladığı görevlerdeki atama kayıtları ve denetim logları sistem bütünlüğü açısından silinmemeli, arşivlenmiş olarak korunmalıdır.
+### FR-06: Görev (Task/Issue) Oluşturma ve Detay Yönetimi
 
 
--  Gereksinim Tanımı: Proje üyeleri ilgili projeye bağlı yeni görevler açabilmeli, ayrıntılı öznitelikler tanımlayabilmeli ve işleri kişilere atayabilmelidir. 
+-  Öncelik: [MUST]
 
 
--  Kabul Kriterleri: 
 
-1. Her görev kartı; Başlık (en fazla 150 karakter), Tür (Task, Bug, Feature), Öncelik (Düşük, Orta, Yüksek, Kritik), Son Teslim Tarihi, Açıklama ve Atanan Kullanıcı alanlarını barındırmalıdır. 
+-  Gereksinim Tanımı: Proje üyeleri ilgili projeye bağlı yeni görevler açabilmeli, ayrıntılı öznitelikler tanımlayabilmeli ve işleri kişilere atayabilmelidir.
 
-2. Görev açıklama alanı Markdown biçimlendirmesini desteklemeli; kod blokları, kalın metinler ve listeler arayüzde standartlara uygun olarak render edilmelidir. 
 
-3. Bir göreve atanacak kullanıcı, yalnızca o projenin onaylı üyeleri arasından seçilebilmelidir. 
-### FR-07: Görev Durum Akışı ve Doğrulama Kuralları 
+-  Kabul Kriterleri:
 
+1. Her görev kartı; Başlık (en fazla 150 karakter), Tür (Task, Bug, Feature), Öncelik (Düşük, Orta, Yüksek, Kritik), Son Teslim Tarihi, Açıklama ve Atanan Kullanıcı alanlarını barındırmalıdır.
 
--  Öncelik: [MUST] 
- 
+2. Görev açıklama alanı Markdown biçimlendirmesini desteklemeli; kod blokları, kalın metinler ve listeler arayüzde standartlara uygun olarak render edilmelidir.
 
+3. Bir göreve atanacak kullanıcı, yalnızca o projenin onaylı üyeleri arasından seçilebilmelidir.
+### FR-07: Görev Durum Akışı ve Doğrulama Kuralları
 
--  Gereksinim Tanımı: Görevler tanımlı bir durum makinesi (state machine) üzerinden ilerlemeli; sistem varsayılan olarak To Do, In Progress ve Done durumlarını işletmelidir. 
 
+-  Öncelik: [MUST]
 
--  Kabul Kriterleri: 
 
-1. Yeni oluşturulan her görev varsayılan olarak To Do durumunda başlatılmalıdır. 
 
-2. Durum güncellemelerinde yalnızca izin verilen durum kodları kabul edilmeli; tanımsız değer içeren istekler HTTP 400 Bad Request ile reddedilmelidir. 
+-  Gereksinim Tanımı: Görevler tanımlı bir durum makinesi (state machine) üzerinden ilerlemeli; sistem varsayılan olarak To Do, In Progress ve Done durumlarını işletmelidir.
 
-3. Bir görev Done durumuna geçirildiğinde sistem kapanış zaman damgasını otomatik olarak kaydetmelidir. 
-### FR-08: Otomatik Görev Durum Geçmişi Günlüğü (State History Log Engine) 
 
+-  Kabul Kriterleri:
 
--  Öncelik: [MUST] 
- 
+1. Yeni oluşturulan her görev varsayılan olarak To Do durumunda başlatılmalıdır.
 
+2. Durum güncellemelerinde yalnızca izin verilen durum kodları kabul edilmeli; tanımsız değer içeren istekler HTTP 400 Bad Request ile reddedilmelidir.
 
--  Gereksinim Tanımı: Bir görevin durumu her değiştiğinde; sistem arka planda hiçbir kullanıcı müdahalesine gerek duymaksızın denetim ve raporlama amaçlı durum geçmişi kaydı oluşturmalıdır. 
+3. Bir görev Done durumuna geçirildiğinde sistem kapanış zaman damgasını otomatik olarak kaydetmelidir.
+### FR-08: Otomatik Görev Durum Geçmişi Günlüğü (State History Log Engine)
 
 
--  Kabul Kriterleri: 
+-  Öncelik: [MUST]
 
-1. Durum değişikliği esnasında task_status_history tablosuna; task_id, old_status, new_status, changed_by_id (kullanıcı kimliği) ve PostgreSQL timestamptz hassasiyetinde changed_at (UTC ISO 8601) bilgileri otomatik olarak yazılmalıdır. 
 
-2. Durum güncellemesi ile geçmiş kaydının oluşturulması aynı veri tabanı işlemi (transaction) içinde yürütülmeli; log oluşturulamadığı takdirde durum değişikliği de geri alınmalıdır (Rollback). 
 
-3. Kaydedilen durum geçmişi verileri değiştirilemez (immutable) yapıda olmalı; API üzerinden güncelleme veya tekil silme işlemlerine kapalı tutulmalıdır. 
-### FR-09: Arama ve Çok Kriterli Görev Filtreleme 
+-  Gereksinim Tanımı: Bir görevin durumu her değiştiğinde; sistem arka planda hiçbir kullanıcı müdahalesine gerek duymaksızın denetim ve raporlama amaçlı durum geçmişi kaydı oluşturmalıdır.
 
 
--  Öncelik: [SHOULD] 
- 
+-  Kabul Kriterleri:
 
+1. Durum değişikliği esnasında task_status_history tablosuna; task_id, old_status, new_status, changed_by_id (kullanıcı kimliği) ve PostgreSQL timestamptz hassasiyetinde changed_at (UTC ISO 8601) bilgileri otomatik olarak yazılmalıdır.
 
--  Gereksinim Tanımı: Kullanıcılar görev havuzunda metin tabanlı arama yapabilmeli; duruma, önceliğe ve atanan kişiye göre filtreler uygulayabilmelidir. 
+2. Durum güncellemesi ile geçmiş kaydının oluşturulması aynı veri tabanı işlemi (transaction) içinde yürütülmeli; log oluşturulamadığı takdirde durum değişikliği de geri alınmalıdır (Rollback).
 
+3. Kaydedilen durum geçmişi verileri değiştirilemez (immutable) yapıda olmalı; API üzerinden güncelleme veya tekil silme işlemlerine kapalı tutulmalıdır.
+### FR-09: Arama ve Çok Kriterli Görev Filtreleme
 
--  Kabul Kriterleri: 
 
-1. Başlık ve açıklama üzerinde büyük/küçük harf duyarsız (case-insensitive) arama yapılabilmelidir. 
+-  Öncelik: [SHOULD]
 
-2. Birden fazla filtrenin birlikte uygulanması (örneğin: Öncelik = Kritik VE Durum = In Progress) durumunda sonuç kümesi 200 milisaniye altında istemciye ulaştırılmalıdır. 
-## 3.3 Modül 3: Takvim ve Zaman Yönetimi 
-### FR-10: Etkileşimli Kanban Panosu (Sürükle-Bırak) 
 
 
--  Öncelik: [MUST] 
- 
+-  Gereksinim Tanımı: Kullanıcılar görev havuzunda metin tabanlı arama yapabilmeli; duruma, önceliğe ve atanan kişiye göre filtreler uygulayabilmelidir.
 
 
--  Gereksinim Tanımı: Projedeki görevler To Do, In Progress ve Done sütunlarından meydana gelen görsel bir panoda listelenmeli; kullanıcılar kartları fare veya dokunmatik etkileşimle sütunlar arasında taşıyabilmelidir. 
+-  Kabul Kriterleri:
 
+1. Başlık ve açıklama üzerinde büyük/küçük harf duyarsız (case-insensitive) arama yapılabilmelidir.
 
--  Kabul Kriterleri: 
+2. Birden fazla filtrenin birlikte uygulanması (örneğin: Öncelik = Kritik VE Durum = In Progress) durumunda sonuç kümesi 200 milisaniye altında istemciye ulaştırılmalıdır.
+## 3.3 Modül 3: Takvim ve Zaman Yönetimi
+### FR-10: Etkileşimli Kanban Panosu (Sürükle-Bırak)
 
-1. Görev kartı üzerinde görev başlığı, öncelik rozeti, atanan kişinin avatarı ve son teslim tarihi açıkça görünmelidir. 
 
-2. Kart bir sütundan diğerine bırakıldığında arka planda PATCH /api/tasks/:id/status çağrısı yapılmalı; ağ hatası durumunda kart otomatik olarak eski konumuna geri dönmelidir (Optimistic UI with Rollback). 
+-  Öncelik: [MUST]
 
-3. Teslim tarihi geçmiş ve henüz Done sütununa geçmemiş kartlar arayüzde kırmızı uyarı çerçevesi veya rozetiyle vurgulanmalıdır. 
-### FR-11: Aylık ve Haftalık İnteraktif Takvim Görünümü 
 
 
--  Öncelik: [MUST] 
- 
+-  Gereksinim Tanımı: Projedeki görevler To Do, In Progress ve Done sütunlarından meydana gelen görsel bir panoda listelenmeli; kullanıcılar kartları fare veya dokunmatik etkileşimle sütunlar arasında taşıyabilmelidir.
 
 
--  Gereksinim Tanımı: Görevlerin başlangıç ve son teslim tarihleri aylık ve haftalık takvim ızgarası üzerinde bloklar halinde listelenmeli ve yönetilebilmelidir. 
+-  Kabul Kriterleri:
 
+1. Görev kartı üzerinde görev başlığı, öncelik rozeti, atanan kişinin avatarı ve son teslim tarihi açıkça görünmelidir.
 
--  Kabul Kriterleri: 
+2. Kart bir sütundan diğerine bırakıldığında arka planda PATCH /api/tasks/:id/status çağrısı yapılmalı; ağ hatası durumunda kart otomatik olarak eski konumuna geri dönmelidir (Optimistic UI with Rollback).
 
-1. Görevler başlangıç ve bitiş tarihlerine göre ilgili gün kutucuklarına yatay zaman çubukları şeklinde yerleşmelidir. 
+3. Teslim tarihi geçmiş ve henüz Done sütununa geçmemiş kartlar arayüzde kırmızı uyarı çerçevesi veya rozetiyle vurgulanmalıdır.
+### FR-11: Aylık ve Haftalık İnteraktif Takvim Görünümü
 
-2. Takvim üzerindeki görev bloğuna tıklandığında görevin detay modalı veya çekmecesi (drawer) açılmalıdır. 
 
-3. Kullanıcı arayüzden tek tıkla haftalık ve aylık görünümler arasında geçiş yapabilmelidir. 
-### FR-12: Proje Zaman Çizelgesi ve Gantt Şeması Görünümü 
+-  Öncelik: [MUST]
 
 
--  Öncelik: [SHOULD] 
- 
 
+-  Gereksinim Tanımı: Görevlerin başlangıç ve son teslim tarihleri aylık ve haftalık takvim ızgarası üzerinde bloklar halinde listelenmeli ve yönetilebilmelidir.
 
--  Gereksinim Tanımı: Proje genelindeki görevlerin zaman eksenindeki sıralanışını, örtüşen iş paketlerini ve kritik aşamaları görselleştiren Gantt şeması sunulmalıdır. 
 
+-  Kabul Kriterleri:
 
--  Kabul Kriterleri: 
+1. Görevler başlangıç ve bitiş tarihlerine göre ilgili gün kutucuklarına yatay zaman çubukları şeklinde yerleşmelidir.
 
-1. Görevler dikey eksende hiyerarşik listelenirken, yatay eksende takvimsel sürelere göre renklendirilmiş barlar halinde gösterilmelidir. 
+2. Takvim üzerindeki görev bloğuna tıklandığında görevin detay modalı veya çekmecesi (drawer) açılmalıdır.
 
-2. Proje kilometre taşları (Milestones) Gantt çizelgesinde elmas simgesiyle tekil tarih noktası olarak konumlandırılmalıdır. 
-## 3.4 Modül 4: Dokümantasyon, Dosya Paylaşımı ve İletişim 
-### FR-13: Güvenli Dosya Yükleme ve Tür/Boyut Denetimi 
+3. Kullanıcı arayüzden tek tıkla haftalık ve aylık görünümler arasında geçiş yapabilmelidir.
+### FR-12: Proje Zaman Çizelgesi ve Gantt Şeması Görünümü
 
 
--  Öncelik: [MUST] 
- 
+-  Öncelik: [SHOULD]
 
 
--  Gereksinim Tanımı: Kullanıcılar projelere ve doğrudan spesifik görevlere dosya yükleyebilmeli; sistem dosya boyutu ve uzantı kontrollerini sunucu tarafında doğrulamalıdır. 
 
+-  Gereksinim Tanımı: Proje genelindeki görevlerin zaman eksenindeki sıralanışını, örtüşen iş paketlerini ve kritik aşamaları görselleştiren Gantt şeması sunulmalıdır.
 
--  Kabul Kriterleri: 
 
-1. Yüklenen tekil dosya boyutu azami 10 MB ile sınırlandırılmalıdır; sınırı aşan dosyalarda sunucu HTTP 413 Payload Too Large yanıtı dönmelidir. 
+-  Kabul Kriterleri:
 
-2. İzin verilen dosya uzantıları .pdf, .png, .jpg, .jpeg, .docx, .xlsx ve .zip ile sınırlandırılmalıdır. 
+1. Görevler dikey eksende hiyerarşik listelenirken, yatay eksende takvimsel sürelere göre renklendirilmiş barlar halinde gösterilmelidir.
 
-3. Sunucu tarafında yalnızca uzantı kontrolü ile yetinilmemeli; dosyanın bayt imzasından (Magic Bytes) gerçek MIME türü doğrulanmalıdır. 
+2. Proje kilometre taşları (Milestones) Gantt çizelgesinde elmas simgesiyle tekil tarih noktası olarak konumlandırılmalıdır.
+## 3.4 Modül 4: Dokümantasyon, Dosya Paylaşımı ve İletişim
+### FR-13: Güvenli Dosya Yükleme ve Tür/Boyut Denetimi
 
-4. Yüklenen dosyalar yerel dosya sisteminde veya nesne deposunda doğrudan orijinal isimleriyle değil, üretilen UUID formatındaki tekil anahtarlarla saklanmalıdır. 
-### FR-14: Yetkilendirilmiş Dosya İndirme ve İzolasyon 
 
+-  Öncelik: [MUST]
 
--  Öncelik: [MUST] 
- 
 
 
--  Gereksinim Tanımı: Projeye yüklenmiş dosyalar yetkili üyeler tarafından güvenli biçimde indirilebilmelidir. 
+-  Gereksinim Tanımı: Kullanıcılar projelere ve doğrudan spesifik görevlere dosya yükleyebilmeli; sistem dosya boyutu ve uzantı kontrollerini sunucu tarafında doğrulamalıdır.
 
 
--  Kabul Kriterleri: 
+-  Kabul Kriterleri:
 
-1. Doğrudan statik dizin erişimi (direct file URL) kapatılmalı; indirme talepleri GET /api/files/:id/download uç noktası üzerinden yetki kontrolü yapılarak aktarılmalıdır. 
+1. Yüklenen tekil dosya boyutu azami 10 MB ile sınırlandırılmalıdır; sınırı aşan dosyalarda sunucu HTTP 413 Payload Too Large yanıtı dönmelidir.
 
-2. Kullanıcının dosyanın ait olduğu projeye üyeliği yoksa sunucu HTTP 403 Forbidden dönmelidir. 
-### FR-15: Görev Yorum Zinciri ve Ekip İletişimi 
+2. İzin verilen dosya uzantıları .pdf, .png, .jpg, .jpeg, .docx, .xlsx ve .zip ile sınırlandırılmalıdır.
 
+3. Sunucu tarafında yalnızca uzantı kontrolü ile yetinilmemeli; dosyanın bayt imzasından (Magic Bytes) gerçek MIME türü doğrulanmalıdır.
 
--  Öncelik: [MUST] 
- 
+4. Yüklenen dosyalar yerel dosya sisteminde veya nesne deposunda doğrudan orijinal isimleriyle değil, üretilen UUID formatındaki tekil anahtarlarla saklanmalıdır.
+### FR-14: Yetkilendirilmiş Dosya İndirme ve İzolasyon
 
 
--  Gereksinim Tanımı: Görev detay ekranlarında kullanıcıların zamana göre sıralanmış yorum zincirleri oluşturabilmesi sağlanmalıdır. 
+-  Öncelik: [MUST]
 
 
--  Kabul Kriterleri: 
 
-1. Yorumlar kronolojik sırada eskiden yeniye doğru alt alta listelenmeli; yazarın adı, avatarı ve işlem zaman damgası görünmelidir. 
+-  Gereksinim Tanımı: Projeye yüklenmiş dosyalar yetkili üyeler tarafından güvenli biçimde indirilebilmelidir.
 
-2. Yorum metinleri temel Markdown formatlamasını desteklemelidir. 
 
-3. Kullanıcılar yalnızca kendi yazdıkları yorumları güncelleyebilmeli veya silebilmeli; Admin rolündeki kullanıcılar uygunsuz içerikleri sistem adına kaldırabilmelidir. 
-## 3.5 Modül 5: Raporlama ve Analiz 
-### FR-16: Proje Genel İlerleme Yüzdesi ve Durum Dağılımı 
+-  Kabul Kriterleri:
 
+1. Doğrudan statik dizin erişimi (direct file URL) kapatılmalı; indirme talepleri GET /api/files/:id/download uç noktası üzerinden yetki kontrolü yapılarak aktarılmalıdır.
 
--  Öncelik: [MUST] 
- 
+2. Kullanıcının dosyanın ait olduğu projeye üyeliği yoksa sunucu HTTP 403 Forbidden dönmelidir.
+### FR-15: Görev Yorum Zinciri ve Ekip İletişimi
 
 
--  Gereksinim Tanımı: Sistem, seçilen bir projedeki işlerin genel tamamlanma oranını ve durum bazlı oransal dağılımını hesaplayarak sunmalıdır. 
+-  Öncelik: [MUST]
 
 
--  Kabul Kriterleri: 
 
-1. Proje ilerleme yüzdesi 100 × Done görev sayısı / toplam görev sayısı olarak hesaplanmalıdır: 
- 
+-  Gereksinim Tanımı: Görev detay ekranlarında kullanıcıların zamana göre sıralanmış yorum zincirleri oluşturabilmesi sağlanmalıdır.
 
-2. Projede henüz hiçbir görev tanımlanmamışsa sıfıra bölme hatası engellenmeli ve oran doğrudan %0 olarak döndürülmelidir. 
 
-3. Durum dağılımı kullanıcı arayüzünde pasta grafik ve sayısal göstergelerle görselleştirilmelidir. 
-### FR-17: Kişi Bazlı Görev Tamamlama ve Gecikme Metrikleri 
+-  Kabul Kriterleri:
 
+1. Yorumlar kronolojik sırada eskiden yeniye doğru alt alta listelenmeli; yazarın adı, avatarı ve işlem zaman damgası görünmelidir.
 
--  Öncelik: [MUST] 
- 
+2. Yorum metinleri temel Markdown formatlamasını desteklemelidir.
 
+3. Kullanıcılar yalnızca kendi yazdıkları yorumları güncelleyebilmeli veya silebilmeli; Admin rolündeki kullanıcılar uygunsuz içerikleri sistem adına kaldırabilmelidir.
+## 3.5 Modül 5: Raporlama ve Analiz
+### FR-16: Proje Genel İlerleme Yüzdesi ve Durum Dağılımı
 
--  Gereksinim Tanımı: Sistem, proje paydaşlarının her biri için tamamlanan, devam eden ve geciken görev hacmini metrikleştirmelidir. 
 
+-  Öncelik: [MUST]
 
--  Kabul Kriterleri: 
 
-1. Her üye için Atanan Toplam Görev, Tamamlanan Görev Sayısı ve Geciken Görev Sayısı ayrı ayrı hesaplanmalıdır. 
 
-2. Bir görevin gecikmiş sayılması için son teslim tarihinin (due date) sistemin anlık saatinden geride olması ve görevin durumunun Done haricinde bir değer taşıması zorunludur. 
-### FR-18: Durum Geçmişi Loglarından Türetilen Trend ve Sprint Burndown Raporu 
+-  Gereksinim Tanımı: Sistem, seçilen bir projedeki işlerin genel tamamlanma oranını ve durum bazlı oransal dağılımını hesaplayarak sunmalıdır.
 
 
--  Öncelik: [MUST] 
- 
+-  Kabul Kriterleri:
 
+1. Proje ilerleme yüzdesi 100 × Done görev sayısı / toplam görev sayısı olarak hesaplanmalıdır:
 
--  Gereksinim Tanımı: Sistem, task_status_history tablosunu zamana bağlı sorgulayarak günlük, haftalık ve aylık akış trendlerini ve sprint burndown verisini üretmelidir. 
 
+2. Projede henüz hiçbir görev tanımlanmamışsa sıfıra bölme hatası engellenmeli ve oran doğrudan %0 olarak döndürülmelidir.
 
--  Kabul Kriterleri: 
+3. Durum dağılımı kullanıcı arayüzünde pasta grafik ve sayısal göstergelerle görselleştirilmelidir.
+### FR-17: Kişi Bazlı Görev Tamamlama ve Gecikme Metrikleri
 
-1. Günlük trend analizinde, her takvim günü için To Do durumundan çıkarılan işler ile Done durumuna çekilen işlerin hacmi net değişim olarak listelenmelidir. 
 
-2. Sprint burndown eğrisi; sprint başlangıcındaki toplam iş miktarından her gün Done durumuna geçen işlerin düşülmesiyle hesaplanmalı, ideal kılavuz çizgi ile fiili çizgi eşzamanlı gösterilmelidir. 
+-  Öncelik: [MUST]
 
-3. Bu analitik sorgular durum geçmişi tablosundaki zaman damgası indeksleri üzerinden koşulmalı ve yanıt süresi 500 milisaniyeyi aşmamalıdır. 
-### FR-19: Analitik Raporların Dışa Aktarımı (Export Engine) 
 
 
--  Öncelik: [COULD] 
- 
+-  Gereksinim Tanımı: Sistem, proje paydaşlarının her biri için tamamlanan, devam eden ve geciken görev hacmini metrikleştirmelidir.
 
 
--  Gereksinim Tanımı: Raporlama panellerinde görüntülenen metrik tabloları ve görev dökümleri dosya formatında dışa aktarılabilmelidir. 
+-  Kabul Kriterleri:
 
+1. Her üye için Atanan Toplam Görev, Tamamlanan Görev Sayısı ve Geciken Görev Sayısı ayrı ayrı hesaplanmalıdır.
 
--  Kabul Kriterleri: 
+2. Bir görevin gecikmiş sayılması için son teslim tarihinin (due date) sistemin anlık saatinden geride olması ve görevin durumunun Done haricinde bir değer taşıması zorunludur.
+### FR-18: Durum Geçmişi Loglarından Türetilen Trend ve Sprint Burndown Raporu
 
 
-1. Filtrelenmiş görev listesi RFC 4180 uyumlu CSV formatında indirilebilmelidir. 
+-  Öncelik: [MUST]
 
-2. Proje özet performans karnesi tek sayfalık biçimlendirilmiş PDF raporu olarak üretilebilmelidir. 
+
+
+-  Gereksinim Tanımı: Sistem, task_status_history tablosunu zamana bağlı sorgulayarak günlük, haftalık ve aylık akış trendlerini ve sprint burndown verisini üretmelidir.
+
+
+-  Kabul Kriterleri:
+
+1. Günlük trend analizinde, her takvim günü için To Do durumundan çıkarılan işler ile Done durumuna çekilen işlerin hacmi net değişim olarak listelenmelidir.
+
+2. Sprint burndown eğrisi; sprint başlangıcındaki toplam iş miktarından her gün Done durumuna geçen işlerin düşülmesiyle hesaplanmalı, ideal kılavuz çizgi ile fiili çizgi eşzamanlı gösterilmelidir.
+
+3. Bu analitik sorgular durum geçmişi tablosundaki zaman damgası indeksleri üzerinden koşulmalı ve yanıt süresi 500 milisaniyeyi aşmamalıdır.
+### FR-19: Analitik Raporların Dışa Aktarımı (Export Engine)
+
+
+-  Öncelik: [COULD]
+
+
+
+-  Gereksinim Tanımı: Raporlama panellerinde görüntülenen metrik tabloları ve görev dökümleri dosya formatında dışa aktarılabilmelidir.
+
+
+-  Kabul Kriterleri:
+
+
+1. Filtrelenmiş görev listesi RFC 4180 uyumlu CSV formatında indirilebilmelidir.
+
+2. Proje özet performans karnesi tek sayfalık biçimlendirilmiş PDF raporu olarak üretilebilmelidir.
 
 ## 4. İşlevsel olmayan gereksinimler
 

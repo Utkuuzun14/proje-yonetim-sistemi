@@ -1,8 +1,8 @@
 # SEK TECH 2026 — Düşük Çözünürlüklü (Lo-Fi) Wireframe Taslakları
 
-**Sorumlu:** Abdulkahhar Türkoğlu (Ürün Sahibi / Müşteri Temsilcisi)  
-**Kilometre Taşı:** M1 - Analiz Tamamlandı (Sprint 1)  
-**Tasarım Aracı:** Figma (Desktop 1440x900)  
+**Sorumlu:** Abdulkahhar Türkoğlu (Ürün Sahibi / Müşteri Temsilcisi)
+**Kilometre Taşı:** M1 - Analiz Tamamlandı (Sprint 1)
+**Tasarım Aracı:** Figma (Desktop 1440x900)
 
 SEK TECH Web Tabanlı Proje Yönetim Platformu'nun 5 temel fonksiyonel modülü için hazırlanan 7 ana ekran yerleşimi, etkileşimli ve dinamik olarak Figma üzerinde kurgulanmıştır:
 
