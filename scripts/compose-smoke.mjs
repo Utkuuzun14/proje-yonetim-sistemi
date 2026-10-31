@@ -1,8 +1,9 @@
 // Run against the disposable Compose CI database. Creates and removes one test project.
 import assert from 'node:assert/strict';
 const base = 'http://localhost:3000';
-async function request(path, {token, method = 'GET', body, status = 200} = {}) {
-  const response = await fetch(base + path, {method, headers: {
+async function request(path, {token, method = 'GET', body, status = 200, origin = base, headers = {}} = {}) {
+  const response = await fetch(origin + path, {method, headers: {
+    ...headers,
     ...(token ? {Authorization: `Bearer ${token}`} : {}),
     ...(body ? {'Content-Type': 'application/json'} : {}),
   }, ...(body ? {body: JSON.stringify(body)} : {}), signal: AbortSignal.timeout(15000)});
@@ -47,3 +48,21 @@ try {
 } finally {
   if (id) await request(`/api/projects/${id}`,{method:'DELETE',token:admin.token,status:204});
 }
+
+// Simulate one trusted proxy forwarding two different clients to Express.
+// These direct API requests exercise the Compose TRUST_PROXY configuration.
+const proxyLogin = (ip, password, status) => request('/api/auth/login', {
+  origin:'http://localhost:5000', method:'POST', status,
+  headers:{'X-Forwarded-For':ip}, body:{email:'hakan@sektech.com',password},
+});
+for (let attempt = 0; attempt < 5; attempt++) {
+  await proxyLogin('192.0.2.10', 'WrongPassword123!', 401);
+}
+await proxyLogin('192.0.2.10', 'Password123!', 429);
+await proxyLogin('192.0.2.11', 'Password123!', 200);
+// nginx appends the actual peer: a supplied header must not select the blocked IP.
+await request('/api/auth/login', {method:'POST',
+  headers:{'X-Forwarded-For':'192.0.2.10'},
+  body:{email:'hakan@sektech.com',password:'Password123!'},
+});
+console.log('PASS: login rate limit isolates forwarded clients and nginx uses the actual peer');

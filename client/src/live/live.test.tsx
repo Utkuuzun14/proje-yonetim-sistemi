@@ -99,9 +99,18 @@ describe('Gerçek oturum ve projeler', () => {
   it('404 proje servisi yanıtında demo veri göstermez; tekrar denemeyle toparlanır', async () => {
     sessionStorage.setItem(SESSION_KEY,'saved');
     vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(reply(member)).mockResolvedValueOnce(error(404)).mockResolvedValueOnce(reply([project])));
-    page();expect(await screen.findByRole('alert')).toHaveTextContent('proje servisi bulunamadı');
+    page();expect(await screen.findByRole('alert')).toHaveTextContent('Proje servisi bulunamadı');
     await userEvent.click(screen.getByRole('button',{name:'Tekrar dene'}));
     expect(await screen.findByRole('link',{name:'Gerçek proje'})).toBeInTheDocument();
+  });
+  it('erişilemeyen proje için varlık bilgisini açığa çıkarmadan geri dönüş sunar', async () => {
+    sessionStorage.setItem(SESSION_KEY,'saved');
+    vi.stubGlobal('fetch',vi.fn().mockResolvedValueOnce(reply(member)).mockResolvedValueOnce(error(404)));
+    page('/uygulama/projeler/7');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Proje bulunamadı veya bu projeye erişim iznin yok');
+    expect(screen.getByRole('link',{name:'← Projelere dön'})).toHaveAttribute('href','/uygulama/projeler');
+    expect(screen.queryByRole('button',{name:'Projeyi düzenle'})).not.toBeInTheDocument();
+    expect(sessionStorage.getItem(SESSION_KEY)).toBe('saved');
   });
   it('eski isteğin 401 yanıtı yeni oturum tokenını silmez', async () => {
     sessionStorage.setItem(SESSION_KEY,'old');

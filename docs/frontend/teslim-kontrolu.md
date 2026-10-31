@@ -1,3 +1,12 @@
+## 31 Ekim 2026 - PR inceleme düzeltmesi
+
+- Compose API servisi tek nginx vekiline güvenecek şekilde TRUST_PROXY=true kullanıyor. Böylece farklı istemcilerin başarısız giriş sayaçları ayrılıyor. Yayında API portunun dışarı kapatılması #73 kapsamındadır.
+- Compose smoke testi: A IP'sinde beş yanlış giriş ve ardından 429; B IP'sinde doğru giriş 200. nginx üzerinden gönderilen sahte X-Forwarded-For başlığının gerçek istemci yerine kullanılmadığı da kontrol ediliyor.
+- Proje detayı 404 mesajı, varlık/yetki ayrımını sızdırmadan proje listesine yönlendiriyor.
+- Yerel frontend doğrulaması: lint, 50 test ve üretim derlemesi başarılı. Docker senaryosu GitHub CI'da koşulur.
+- Hakan'ın 30 Ekim ürün sahibi kabulü: 8/9 rol-proje senaryosu geçti, RP-07 #110 nedeniyle koşullu. Kaynak: https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/41#issuecomment-6528016025
+- PR #93 için teknik yeniden inceleme bekleniyor; bu not nihai backend kabulü değildir.
+
 # Frontend teslim kontrolü - 30 Ekim 2026
 
 ## Güncel durum

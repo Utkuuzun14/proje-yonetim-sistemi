@@ -13,8 +13,10 @@ function project(value: unknown): Project {
     ['description', 'start_date', 'end_date'].some(key => { const v = p[key as keyof Project]; return v != null && typeof v !== 'string'; })) throw new Error('Proje yanıtı beklenen biçimde değil.');
   return p;
 }
-function message(error: unknown) {
-  if (error instanceof ApiError && error.status === 404) return 'Proje veya proje servisi bulunamadı. Bağlantıyı kontrol et; servis hazır değilse ekipten destek iste.';
+function message(error: unknown, detail = false) {
+  if (error instanceof ApiError && error.status === 404) return detail
+    ? 'Proje bulunamadı veya bu projeye erişim iznin yok. Proje listesine dönerek erişebildiğin projeleri görebilirsin.'
+    : 'Proje servisi bulunamadı. Lütfen daha sonra tekrar dene.';
   return error instanceof Error ? error.message : 'İşlem tamamlanamadı.';
 }
 function useProjects(id?: string) {
@@ -29,7 +31,7 @@ function useProjects(id?: string) {
       if (controller.signal.aborted) return;
       if (!id && !Array.isArray(data)) throw new Error('Proje listesi beklenen biçimde değil.');
       setItems(id ? [project(data)] : (data as unknown[]).map(project));
-    }).catch(e => { if (!controller.signal.aborted) setError(message(e)); })
+    }).catch(e => { if (!controller.signal.aborted) setError(message(e, !!id)); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [id, version]);
@@ -54,7 +56,7 @@ function ProjectEditor({value, onClose, onSaved}: {value?: Project; onClose: () 
       await apiRequest(value ? `/projects/${value.id}` : '/projects', {auth: true, method: value ? 'PATCH' : 'POST', body, expectData: false});
       onSaved();
     } catch (err) {
-      setError(message(err));
+      setError(message(err, !!value));
       if (err instanceof ApiError) setFieldErrors(Object.fromEntries(err.details.map(d => [d.field, d.message])));
     } finally { setBusy(false); }
   }
