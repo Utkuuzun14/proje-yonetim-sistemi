@@ -77,7 +77,7 @@ alanlarının altına yazılır.
 | GET | `/api/auth/me` | Oturumdaki kullanıcı | ✅ #37 |
 | GET | `/api/users` | Kullanıcı listesi (Yönetici) | ✅ #37, #44 |
 | POST | `/api/users` | Kullanıcı ekle, rol verilebilir (Yönetici) | ✅ #44 |
-| GET | `/api/users/:id` | Kullanıcı detayı | ✅ #37 |
+| GET | `/api/users/:id` | Kullanıcı detayı (Yönetici herkesi; Ekip Üyesi yalnızca kendini, diğerleri 403) | ✅ #37, #110 |
 | PATCH | `/api/users/:id/role` | Rol ata (Yönetici; kendi rolü değiştirilemez) | ✅ #44 |
 | GET/POST | `/api/projects` | Projeler (Yönetici tümü, Ekip Üyesi üyesi olduğu) / proje oluştur (Yönetici) | ✅ #44 |
 | GET/PATCH/DELETE | `/api/projects/:id` | Proje detay + üyeler / güncelle / sil (Yönetici) | ✅ #44 |
