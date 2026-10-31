@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Bağımlılıklar
         run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
       - name: Lint
@@ -155,6 +155,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: docker compose up
         run: docker compose up --build -d --wait --wait-timeout 180
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tam sistem smoke testi
+        run: node scripts/compose-smoke.mjs
       - name: Smoke testi (health + giriş)
         run: |
           curl -fsS http://localhost:5000/api/health
