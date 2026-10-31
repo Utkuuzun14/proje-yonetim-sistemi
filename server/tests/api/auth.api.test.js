@@ -135,15 +135,15 @@ describe('Korumalı uç noktalar', () => {
     res.body.data.forEach((u) => expect(u).not.toHaveProperty('password_hash'));
   });
 
-  test('GET /api/users/:id: olmayan → 404, geçersiz id → 400', async () => {
-    const token = await tokenFor();
+  test('GET /api/users/:id: olmayan → 404, geçersiz id → 400 (Yönetici)', async () => {
+    const token = await tokenFor('hakan@sektech.com');
     const auth = { Authorization: `Bearer ${token}` };
     expect((await request(app).get('/api/users/99999').set(auth)).status).toBe(404);
     expect((await request(app).get('/api/users/abc').set(auth)).status).toBe(400);
   });
 
   test('#102: GET /api/users/:id integer sınırı üstünde → 400 (500 değil)', async () => {
-    const token = await tokenFor();
+    const token = await tokenFor('hakan@sektech.com');
     const auth = { Authorization: `Bearer ${token}` };
     expect((await request(app).get('/api/users/99999999999').set(auth)).status).toBe(400);
     expect((await request(app).get('/api/users/2147483648').set(auth)).status).toBe(400);

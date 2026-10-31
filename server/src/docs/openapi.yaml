@@ -151,7 +151,8 @@ paths:
   /api/users/{id}:
     get:
       tags: [Users]
-      summary: Kullanıcı detayı
+      summary: Kullanıcı detayı (Yönetici herkesi, diğerleri yalnızca kendini)
+      description: Başka bir kullanıcının kimliği, kullanıcı var olsun olmasın 403 döner (#110). 404 yalnızca Yönetici için.
       security: [{ bearerAuth: [] }]
       parameters: [{ $ref: '#/components/parameters/Id' }]
       responses:
@@ -165,6 +166,7 @@ paths:
                   data: { $ref: '#/components/schemas/User' }
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
   /api/users/{id}/role:
