@@ -12,7 +12,7 @@
 
 **Kabul ve zaman sırası:** Abdulkahhar’ın ürün sahibi görevlerini Hakan bu sprint için geçici olarak üstlendi. Hakan’ın 30 Ekim tarihli [#41 kabul kaydı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/41#issuecomment-6528016025), #93’ün `ce1edca` sürümünde 9 senaryodan 8’inin geçtiğini, RP-07’nin #110 nedeniyle kaldığını bildiriyor. 1 Kasım kapanış duyurusunda #110 Sprint 4’ün ilk işi olarak devredildi; ardından [#124](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/124) birleşti ve #110 kapandı. RP-07’nin ürün sahibi tarafından tekrar koşulması ve nihai kabul kaydı bekleniyor.
 
-**Açık işler:** RP-07 tekrar kabulü, #36 Figma bağlantısı ve tasarım onayı, #34 ürün adı/kimlik kararı, #40 kapanış burndown verisi ve #100 süreç doğrulaması. #119–#123 belge PR’ları incelemededir.
+**Açık işler:** RP-07 tekrar kabulü, #36 Figma bağlantısı ve tasarım onayı, #34 ürün adı/kimlik kararı. #40 kapanış burndown verisi yayımlandı; #40 ve #100 kapandı. #119–#123 belge PR’ları incelemededir.
 
 ## Bu hafta yapılanlar
 
@@ -20,7 +20,7 @@ Ekip teslimatları ve incelemedeki çıktılar aşağıda özetlenmiştir.
 
 | Kişi | Yapılan iş | Kart / PR |
 |---|---|---|
-| Hakan Koço | 29 Ekim’de sekiz karar yayımlandı. Ürün sahibi sorumluluğunu bu sprintte üstlenerek SRS, backlog ve kabul planını onayladı; #41’de 8/9 senaryoyla koşullu kabul kaydı oluşturdu. #110’u Sprint 4’ün ilk işi olarak devretti. #114–#118’i gelecek sprintlerde kart sahiplerince ele alınmak üzere birleştirmeden kapattı. #40 burndown tablosunda Cuma/Pazar gerçekleşme hücreleri boş; kapanış ölçümü doğrulanamadı. | [#96](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/96#issuecomment-6497201808), [#41 kabul kaydı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/41#issuecomment-6528016025), [#110 devir kararı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/110#issuecomment-6527697891), #40; PR #111–#118 |
+| Hakan Koço | 29 Ekim’de sekiz karar yayımlandı. Ürün sahibi sorumluluğunu bu sprintte üstlenerek SRS, backlog ve kabul planını onayladı; #41’de 8/9 senaryoyla koşullu kabul kaydı oluşturdu. #110’u Sprint 4’ün ilk işi olarak devretti. #114–#118’i gelecek sprintlerde kart sahiplerince ele alınmak üzere birleştirmeden kapattı. [20.00 kapanış kaydında](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/40#issuecomment-6561066633) burndown gerçekleşmesi Cuma 10, Pazar #40 kapanmadan önce 8, kapandıktan sonra 7 olarak yayımlandı. | [#96](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/96#issuecomment-6497201808), [#41 kabul kaydı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/41#issuecomment-6528016025), [#110 devir kararı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/110#issuecomment-6527697891), #40; PR #111–#118 |
 | Abdulkahhar Türkoğlu | **Birleşti:** Ümit’in hazırladığı SRS v1.1 (#111), H4–H5 backlog/tasarım kabul belgesi (#112), rol/proje kabul planı ve MVP demo taslağı (#113). Hakan ürün sahibi olarak onayladı. #41’de manuel test yapılmıştır: RP-01…RP-09 için **8/9 başarılı**; RP-07 (#110) başarısız, kabul koşullu. Nihai kabul için RP-07 tekrar koşulmalı. #34 ve #97 açık; #34’te Figma onayı ve ürün adı kararı bekliyor. | [#111](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/111), [#112](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/112), [#113](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/113), [#41](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/41#issuecomment-6528016025), #34, #97 |
 | Mert Yanık | **İnceleme durumu:** #119’un önceki sürümü ve #120–#122 aktarımları Utku’nun 1 Kasım incelemesinde onay aldı; PR’lar açık. #119’un tutanak taşıma/şablonu geri getirme commit’i sonrasında eski onayı GitHub’da DISMISSED durumuna geçti; güncel sürüm için yeniden nihai onay bekleniyor. Geçmiş raporlar plan kaydıdır. Rapor #4 bu PR’da 1 Kasım son durumuna getirildi. Hakan’ın Mert’e ilettiği mesajda güncel raporun **1 Kasım 2026 saat 21.00’e kadar (Türkiye saati)** kendisine iletilmesi istendi. PR incelemededir. | #21 → [#119](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/119), #120; #28 → #121; #35 → #122; #42 → [#123](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/123) |
 | Ümit Efe Özkaleli | **Birleşti:** #93 (`ce3dcc8`) ile React arayüz, JWT oturumu, proje ekranları ve tek komutla PostgreSQL + API + nginx/arayüz kurulumu develop’a alındı; #22/#29 kapandı. Zorunlu **TRUST_PROXY** düzeltmesi `0180503` ile eklendi ve Utku onayladı: aynı IP beş başarısız girişten sonra 429, farklı IP başarılı girişte 200; nginx istemcinin uydurduğu X-Forwarded-For bilgisini güvenilir istemci kimliği olarak kullanmıyor. #111–#113 de birleşti. Arayüz kabulü Figma tasarım onayı yerine geçmez: #96 Karar 5 ana ekranların Figma’da çizilmesini istiyor; #36 açık; Hakan kapanış duyurusunda Figma bağlantısının **2 Kasım Pazartesi’ye kadar** paylaşılmasını istedi, tasarım onayı bu çıktıya bağlı. | [#93](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/93), [son teknik onay](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/93#pullrequestreview-5727907872), #22, #29, #36; PR #111–#113 |
@@ -28,7 +28,7 @@ Ekip teslimatları ve incelemedeki çıktılar aşağıda özetlenmiştir.
 | Buğra Durmuş | **Birleşti (30 Ekim):** Rol/yetki ve proje üyeliği şeması, tarih bütünlüğü kısıtı, indeksler, yetki/üyelik örnek verisi ve repository desteği develop’a alındı. #45 kapalı; PR’da inceleme onayı var. | #45 → [PR #107](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/107), merge commit `9eb2eb3` |
 | Utku Uzun | **Birleşti:** Test Turu #1 (#106), sadeleştirilmiş rapor şablonu (#95) ve RBAC/proje kabul testleri (#101, 25 test); #46 kapandı. #93 TRUST_PROXY düzeltmesini, #124’ü, #111–#113 ve #119–#122’yi inceledi. #124 incelemesinde 114/114 başarılı test ve kullanıcı detayı erişim kontrolünün manuel doğrulaması kayıtlı.  Test Turu #1’in 20 deneme / 15 geçen / 4 hata / 1 bloke sonucu tarihsel kayıttır. | [#101](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/101), [#46](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/46), [#124 incelemesi](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/124#pullrequestreview-5727911180), #106, #95 |
 
-**Sprint hedefi değerlendirmesi:** Backend, veritabanı, arayüz ve RBAC/proje kabul testleri develop’a birleşti; yönetici proje oluşturma/düzenleme ve Ekip Üyesinin yetkisiz işlemlerde 403 alması kayıtlı testlerle doğrulandı. Teknik uçtan uca akış sağlanmıştır. #41 ürün kabulü 8/9 ile koşulludur; #110 kapanmış olsa da RP-07 tekrar sonucu ve nihai kabul kaydı yoktur. #36 Figma tasarım onayı da açık kalmıştır. Doğrulanmış kapanış burndown ölçümü veya tamamlanma yüzdesi sunulmadığından oran hesaplanmamıştır.
+**Sprint hedefi değerlendirmesi:** Backend, veritabanı, arayüz ve RBAC/proje kabul testleri develop’a birleşti; yönetici proje oluşturma/düzenleme ve Ekip Üyesinin yetkisiz işlemlerde 403 alması kayıtlı testlerle doğrulandı. Teknik uçtan uca akış sağlanmıştır. #41 ürün kabulü 8/9 ile koşulludur; #110 kapanmış olsa da RP-07 tekrar sonucu ve nihai kabul kaydı yoktur. #36 Figma tasarım onayı da açık kalmıştır. Kapanış burndown verisi aşağıda açık kart sayılarıyla verilmiştir; bu gösterge teknik tamamlanma yüzdesinden ayrı değerlendirilir.
 
 **Proje dokümanına API bağlantıları:** [API sözleşmesi](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/docs/backend/api-sozlesmesi.md), [OpenAPI v0.5 kaynağı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/src/docs/openapi.yaml), [backend çalıştırma ve Swagger yönergesi](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/README.md). Bunlar kaynak/yönerge bağlantılarıdır; bu rapor hazırlanırken yeni bir canlı API testi yapılmamıştır.
 
@@ -140,13 +140,13 @@ Altı ekran görüntüsü, giriş ve proje ekranlarını, rol farklarını ve do
 
 - **Kabul:** #110 kapanmış olmasına rağmen #41 RP-07 tekrar koşulmalı ve ürün sahibi nihai kabulü kaydedilmeli.
 - **Tasarım:** #36 Figma bağlantısı 2 Kasım Pazartesi’ye kadar istendi; tasarım onayı bu çıktıya bağlı. #34 ürün adı/kimlik kararı da bekliyor.
-- **Süreç:** #100 açık; kutuların işaretli olması otomatik Done davranışını bu rapor için bağımsız doğrulamaz.
+- **Süreç:** [Kapanış kaydına](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/40#issuecomment-6561066633) göre #100 kapandı. Kartların PR’larla zamanında kapanması Sprint 4 süreç iyileştirmesi olarak belirlendi.
 - **Planlama:** [#114](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/114), [#115](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/115), [#116](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/116), [#117](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/117), [#118](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/118) Hakan’ın kararıyla birleşmeden kapatıldı; gelecek sprint işleri kendi sprintinde kart sahibi tarafından açılacak.
 - **Rapor teslimi:** Son inceleme ve öğretim üyesine iletim için hedef 1 Kasım saat 21.00.
 
 #### Burndown — #40 kontrolü
 
-[#40’ın güncel plan/burndown yorumu](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/40#issuecomment-6497313650) 1 Kasım’da yeniden kontrol edildi. “Gerçek” gün sonunda açık kart sayısıdır; efor/puan değildir. Kaynaktaki değerler:
+Başlangıç–29 Ekim değerleri [sprint planından](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/40#issuecomment-6497313650), kalan günler [Hakan’ın 1 Kasım 20.00 kapanış kaydından](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/40#issuecomment-6561066633) alınmıştır. “Gerçek”, #40–#46 ve #96–#100 kapsamındaki açık Sprint 3 kartı sayısıdır; kapanma saatleri Türkiye saatine göre değerlendirilmiştir.
 
 | Gün | İdeal | Gerçek |
 |---|---|---|
@@ -155,10 +155,10 @@ Altı ekran görüntüsü, giriş ve proje ekranlarını, rol farklarını ve do
 | 27 Ekim Salı | 3 | 7 |
 | 28 Ekim Çarşamba (yarım gün) | 2 | 7 |
 | 29 Ekim Perşembe (tatil) | 7 | 12 |
-| 30 Ekim Cuma | 0 | Yayımlanmamış / boş |
-| 1 Kasım Pazar | 0 | Yayımlanmamış / boş |
+| 30 Ekim Cuma | 0 | 10 |
+| 1 Kasım Pazar | 0 | 8 → 7 (#40 kapanışı sonrası) |
 
-29 Ekim’de #96–#100 eklenmesiyle kapsam 5 kart arttı. Pazar için **ideal 0, gerçekleşen bilinmiyor**; boş hücre sıfır kabul edilmedi. Anlık açık kart sayısı geçmiş gün sonu ölçümü yerine konmadı; tamamlanma yüzdesi hesaplanmadı.
+29 Ekim’de #96–#100 eklenmesiyle kapsam 5 kart arttı. Cuma #44 ve #45 kapandı; gerçekleşen 10 oldu. Pazar #46 ve #100’ün kapanışıyla sayı 8’e, #40’ın kapanışıyla **7’ye** düştü. Kaynaktaki **8 → 7** geçişi korunmuştur. Kapanan beş kart #44, #45, #46, #100 ve #40’tır. Açık kart sayısının yüksek kalmasında, tamamlanan bazı işlerin kartlarının henüz kapatılmaması etkili oldu. Sprint 4’te PR’lara `Closes #kart` eklenmesi ve birleştirmelerin gün içinde yapılması kararlaştırıldı. [Kaynak](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/40#issuecomment-6561066633).
 
 ## Haftaya yapılacaklar
 
@@ -174,6 +174,6 @@ Altı ekran görüntüsü, giriş ve proje ekranlarını, rol farklarını ve do
 | Buğra Durmuş | Görev, yorum ve durum geçmişi tabloları; her durum değişiminde geçmiş kaydı; gerçekçi demo seed verisi. | [#52](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/52) |
 | Utku Uzun | #110 düzeltmesi sonrası RP-07 tekrar kabulünü ürün sahibiyle doğrulamak; #101’deki #110 todo’sunun güncel karşılığını kontrol etmek. Görev/yorum API testleri, E2E altyapısı ve ilk Kanban senaryosu; regresyon test listesi. | [#53](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/53) |
 
-**Not / engel:** #110 güncel kayıtta kapalıdır; açık güvenlik hatası gibi raporlanmaz. Kalan kabul işi #41 RP-07 tekrar koşumu ve nihai kabul; tasarım işi #36 Figma çıktısı/onayıdır (#34 de açık). #100 pano otomasyonu/koruma kartı açık; kutuları işaretli olsa da beklenen otomatik Done davranışı bu rapor için bağımsız denenmedi. #114–#118 karar beklemiyor: Hakan’ın kararıyla birleşmeden kapalı; taslaklar referans olarak duruyor, gelecek sprint işleri ilgili sprintte kart sahibince ele alınacak.
+**Not / engel:** #110 güncel kayıtta kapalıdır; açık güvenlik hatası gibi raporlanmaz. Kalan kabul işi #41 RP-07 tekrar koşumu ve nihai kabul; tasarım işi #36 Figma çıktısı/onayıdır (#34 de açık). #100 pano otomasyonu/koruma kartı kapanış kaydında kapalı; kartların zamanında kapanması Sprint 4 süreç takibinde. #114–#118 karar beklemiyor: Hakan’ın kararıyla birleşmeden kapalı; taslaklar referans olarak duruyor, gelecek sprint işleri ilgili sprintte kart sahibince ele alınacak.
 
 **Kaynaklar:** Hakan’ın 1 Kasım Sprint 3 kapanış duyurusu; #96 yazılı kararları; #41 kabul kaydı; #110 devir kararı; ilgili PR ve inceleme kayıtları; [Test Turu #1](../test/test-turlari/tur-01.md).
