@@ -1,21 +1,6 @@
-# =============================================================================
-# SEK TECH — Proje Yönetim Platformu
-# Tek Komutla Kurulum Orkestrasyonu (docker-compose.yml) — Sprint 2 (Issue #38)
-# Sorumlu: Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)
-#
-# Çalıştırma:
-#   docker compose up --build -d               → db + server (API: http://localhost:5000/api/docs)
-#   docker compose --profile app up --build -d → db + server + client
-#
-# Not: client/ iskeleti ve Dockerfile'ı henüz eklenmediği için client servisi "app" profilinde.
-# İskelet (#29) gelince profil satırı kaldırılacak.
-#
-# Servisler:
-#   - db:     PostgreSQL 15 (Port 5432) — Otomatik init.sql ve seed.sql kurulumu
-#   - server: Node.js / Express API (Port 5000)
-#   - client: React / Vite Web Ön Yüz (Port 3000)
-# =============================================================================
-
+# Tam sistem: docker compose up --build -d
+# Altyapı: Buğra Durmuş (#38); servisler: PostgreSQL, Express API, nginx/React.
+# Frontend: http://localhost:3000 | API: http://localhost:5000/api/docs
 services:
   db:
     image: postgres:15-alpine
@@ -52,16 +37,17 @@ services:
       PORT: 5000
       DATABASE_URL: postgresql://admin:password@db:5432/sektech
       JWT_SECRET: dev-jwt-secret-key-sektech-2026
+      # nginx tek güvenilen vekildir. Yayında API portu dışarı açılmamalıdır (#73).
+      TRUST_PROXY: "true"
 
   client:
-    profiles: ["app"]   # client/Dockerfile eklenince kaldırılacak (#29)
     build:
       context: ./client
       dockerfile: Dockerfile
     container_name: sektech-client
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - server
 
