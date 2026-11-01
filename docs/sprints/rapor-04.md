@@ -72,19 +72,34 @@ Swagger arayüzü `/api/docs`, JSON belge `/api/openapi.json` adresindedir. Open
 
 #### Kullanıcı ekranları ve gözlenen davranışlar
 
-Kullanıcı mesajında “7 PNG” denmesine karşın bu çalışma sırasında **altı gömülü ekran görüntüsü** görülebildi; özgün PNG dosyaları çalışma ortamında veya repo branch’inde bulunamadı. Görseller üretilmedi veya değiştirilmedi. Dosya ekleri erişilebilir olduğunda `docs/sprints/img/` altına aşağıdaki adlarla eklenip Markdown görsel bağlantıları tamamlanmalıdır. Şimdilik var olmayan dosyalara kırık bağlantı eklenmedi; bu görsel teslim maddesi **eksiktir**.
+Kullanıcının yüklediği `sek-tech-rapor-4-gorseller.zip` arşivindeki **altı farklı PNG**, özgün baytları korunarak `docs/sprints/img/` altına eklenmiştir. Görseller üretilmemiş, kırpılmamış veya değiştirilmemiştir. Ekran görüntüleri görünen arayüzü belgeler; tek başına API yanıtını, kayıt kalıcılığını veya nihai kabulü kanıtlamaz.
 
-| Görünen ekran | Önerilen dosya adı | Görselin desteklediği gözlem ve sınır |
+| Ekran | Görsel | Gözlem / sınır |
 |---|---|---|
-| Yönetici proje listesi — Hakan Koço | `sprint-03-yonetici-proje-listesi.png` | İki proje kartı, “Yeni proje” ve “Düzenle” düğmeleri görünüyor. Statik ekran API isteğinin sonucunu tek başına kanıtlamaz. |
-| Ekip Üyesi proje hata durumu — Utku Uzun | `sprint-03-ekip-uyesi-proje-hatasi.png` | “Proje veya proje servisi bulunamadı…” uyarısı ve “Tekrar dene” var; başarılı detay erişimi değildir. HTTP yanıtı ve üyelik bilinmeden kök neden belirlenemez. |
-| Ekip Üyesi proje detayı — Utku Uzun | `sprint-03-ekip-uyesi-proje-detayi.png` | “Etkinlik Sitesi - UAT 82934 (v2)”, açıklama, 2026-11-02 / 2026-11-30 tarihleri görünür; düzenleme düğmesi görünmez. |
-| Ekip Üyesi proje listesi — Utku Uzun | `sprint-03-ekip-uyesi-proje-listesi.png` | İki proje kartı görünür; Yönetici ekranındaki oluşturma/düzenleme düğmeleri yok. |
-| Giriş ekranı | `sprint-03-giris-ekrani.png` | E-posta/parola formu ve giriş düğmesi var; başarılı giriş sonucu bu görüntüden çıkarılamaz. |
-| Yeni proje formu — tarih doğrulama uyarısı | `sprint-03-yeni-proje-tarih-uyarisi.png` | “Form testi” ve tarih sırası uyarısı var. Kayıt başarıyla tamamlanmış gibi sunulmaz. |
-| Yedinci PNG | Henüz belirlenmedi | Mesajda ayrı dosya/görüntü olarak görülmedi; içeriği ve başlığı uydurulmadı. |
+| Yönetici proje listesi — Hakan Koço | [Yönetici proje listesi](img/yonetici-proje-listesi.png) | İki proje kartı, “Yeni proje” ve “Düzenle” düğmeleri görünür. |
+| Ekip Üyesi proje listesi — Utku Uzun | [Ekip Üyesi proje listesi](img/ekip-uyesi-proje-listesi.png) | Proje kartları görünür; oluşturma/düzenleme düğmeleri yoktur. |
+| Ekip Üyesi proje detayı — Utku Uzun | [Ekip Üyesi proje detayı](img/ekip-uyesi-proje-detayi.png) | Proje açıklaması ve tarihleri görünür; düzenleme düğmesi yoktur. |
+| Giriş ekranı | [Giriş ekranı](img/giris-ekrani.png) | E-posta/parola formu görünür; başarılı giriş sonucu gösterilmez. |
+| Ekip Üyesi proje hata durumu | [Proje hata ekranı](img/ekip-uyesi-proje-hata-ekrani.png) | Hata uyarısı ve tekrar deneme düğmesi vardır; başarılı detay erişimi değildir. Test bölümünde gösterilmiştir. |
+| Yeni proje formu — tarih uyarısı | [Tarih doğrulama uyarısı](img/yeni-proje-formu-tarih-uyarisi.png) | Tarih sırası uyarısı vardır; başarılı kayıt değildir. Test bölümünde gösterilmiştir. |
 
-**Tarih validasyonu incelemesi:** Son görselde başlangıç `11/10/2026`, bitiş `11/01/2026` görünüyor. Yaygın ay/gün veya gün/ay gösterimlerinin ikisinde de bitiş başlangıçtan öncedir; tarayıcının kesin yerel biçimi ve ham ISO değerleri görüntüden bilinmez. [ProjectEditor](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/client/src/live/Projects.tsx) `start_date > end_date` ise aynı uyarıyı gösterip API çağrısından önce durur. [backend tarih şeması](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/src/modules/projects/projects.schemas.js), [güncelleme kontrolü](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/src/modules/projects/projects.service.js) ve [VT tarih kısıtı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/database/init.sql) da ters sırayı engeller. Bu gözlem beklenen doğrulamayla uyumludur; doğrulanmış bug veya başarılı kayıt değildir. #41 RP-08’de tarih düzeltilince kayıt başarısı ayrıca kayıtlıdır; bu, ekrandaki formun başarıyla kaydedildiğini kanıtlamaz. Ayrıca arayüz iki tarihi zorunlu tutarken OpenAPI/backend bunları boş bırakmaya izin verir; bu gereksinim farkı ürün sahibiyle netleştirilmelidir, bu raporda teyitsiz bug ilan edilmez.
+**Giriş ekranı:** Form ve giriş düğmesi; bu görüntü başarılı oturum açma kanıtı değildir.
+
+![Giriş ekranı: e-posta ve parola formu](img/giris-ekrani.png)
+
+**Yönetici proje listesi:** Hakan Koço hesabında oluşturma ve düzenleme kontrolleri görünür.
+
+![Yönetici proje listesi: Yeni proje ve Düzenle düğmeleri](img/yonetici-proje-listesi.png)
+
+**Ekip Üyesi proje listesi:** Utku Uzun hesabında aynı yönetici kontrolleri görünmez.
+
+![Ekip Üyesi proje listesi: oluşturma ve düzenleme düğmeleri yok](img/ekip-uyesi-proje-listesi.png)
+
+**Ekip Üyesi proje detayı:** “Etkinlik Sitesi - UAT 82934 (v2)” açıklaması ve 2026-11-02 / 2026-11-30 tarihleri görünür.
+
+![Ekip Üyesi proje detayı: açıklama ve tarihler](img/ekip-uyesi-proje-detayi.png)
+
+**Tarih validasyonu incelemesi:** Test bölümündeki yeni proje formu görselinde başlangıç `11/10/2026`, bitiş `11/01/2026` görünüyor. Yaygın ay/gün veya gün/ay gösterimlerinin ikisinde de bitiş başlangıçtan öncedir; tarayıcının kesin yerel biçimi ve ham ISO değerleri görüntüden bilinmez. [ProjectEditor](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/client/src/live/Projects.tsx) `start_date > end_date` ise aynı uyarıyı gösterip API çağrısından önce durur. [backend tarih şeması](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/src/modules/projects/projects.schemas.js), [güncelleme kontrolü](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/src/modules/projects/projects.service.js) ve [VT tarih kısıtı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/database/init.sql) da ters sırayı engeller. Bu gözlem beklenen doğrulamayla uyumludur; doğrulanmış bug veya başarılı kayıt değildir. #41 RP-08’de tarih düzeltilince kayıt başarısı ayrıca kayıtlıdır; bu, ekrandaki formun başarıyla kaydedildiğini kanıtlamaz. Ayrıca arayüz iki tarihi zorunlu tutarken OpenAPI/backend bunları boş bırakmaya izin verir; bu gereksinim farkı ürün sahibiyle netleştirilmelidir, bu raporda teyitsiz bug ilan edilmez.
 
 **Proje hata ekranı incelemesi:** #41 RP-02’de üye olmayana 404 dönmesi beklenen erişim kuralıdır. Sağlanan eski metin, #41’deki UX notuyla örtüşüyor; güncel [404 detay mesajı](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/client/src/live/Projects.tsx) “Proje bulunamadı veya bu projeye erişim iznin yok…” olarak değiştirilmiş. Ekran sürümü/ağ kaydı olmadığından yeni sürümde hata sürdüğü veya servis kesildiği söylenemez. Görsel tarihsel hata/UX kaydı olarak değerlendirilir; güncel başarılı senaryo diye etiketlenmez.
 
@@ -99,6 +114,18 @@ Kullanıcı mesajında “7 PNG” denmesine karşın bu çalışma sırasında 
 
 1 Kasım’da #41 yorumları yeniden okundu: **#110 sonrası RP-07 tekrar kabulü ve nihai ürün sahibi kabulü yayımlanmamış.** [#101 test dosyasında](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/tests/api/projects.rbac.api.test.js) #110 için `test.todo` hâlâ mevcut; [#124 kullanıcı testleri](https://github.com/Utkuuzun14/proje-yonetim-sistemi/blob/2d6cd3076a5d6cc306770bd23d47c81b5abb4610/server/tests/api/users.admin.api.test.js) gerçek regresyon kontrollerini içeriyor. Todo’nun bulunması #110’un kodda açık olduğu anlamına gelmez. Bu belge güncellemesinde testler yeniden çalıştırılmadı.
 
+#### Test ekranları — hata ve doğrulama gözlemleri
+
+Bu iki PNG yeni bir test koşumu veya başarılı kabul sonucu olarak sayılmamıştır. Yukarıdaki tarih validasyonu ve proje hata ekranı incelemeleriyle birlikte değerlendirilmelidir.
+
+**Proje hata durumu:** Ekip Üyesi ekranında “Proje veya proje servisi bulunamadı…” uyarısı görünür. HTTP durum kodu/ağ kaydı ve ilgili üyelik bilinmediği için bu görüntüden kök neden, başarılı erişim kontrolü veya servis kesintisi sonucu çıkarılmaz.
+
+![Ekip Üyesi proje hata ekranı: başarısız detay görünümü ve Tekrar dene düğmesi](img/ekip-uyesi-proje-hata-ekrani.png)
+
+**Yeni proje formunda tarih uyarısı:** Başlangıç `11/10/2026`, bitiş `11/01/2026` ve “bitiş başlangıçtan önce olamaz” uyarısı görünür. Bu, kodun tarih sırası kontrolüyle uyumludur; kayıt başarısı veya doğrulanmış bug olarak sunulmaz. RP-08’in kaynak test sonucu ayrı kayıttır; bu görsel yeni tekrar kabul sayılmaz.
+
+![Yeni proje formu: tarih sırası doğrulama uyarısı; başarılı kayıt değil](img/yeni-proje-formu-tarih-uyarisi.png)
+
 ### Dokümantasyon
 
 | PR | Çıktı ve 1 Kasım durumu |
@@ -107,14 +134,14 @@ Kullanıcı mesajında “7 PNG” denmesine karşın bu çalışma sırasında 
 | [#112](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/112), [#113](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/113) | Backlog/tasarım kabul ve rol-proje kabul/MVP demo belgeleri birleşti. Belgelerin hazırlanma anındaki “kabul yapılmadı” notu daha sonraki #41 kaydının yerine geçmez. |
 | [#119](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/119) | Sekiz yazılı karar `docs/tutanaklar/2026-10-29-sprint-3-kararlari.md` dosyasına taşındı; boş karar şablonu geri getirildi. PR açık; güncel değişiklik için nihai inceleme bekliyor. |
 | [#120](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/120), [#121](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/121), [#122](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/122) | Eski raporların Markdown aktarımları onaylı, PR’lar açık; geçmiş planlar yeni gerçekleşme kanıtı sayılmaz. |
-| [#123](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/123) | Bu Sprint 3 kapanış raporu; görsel dosya teslimi eksik, nihai inceleme ve hocaya gönderim henüz doğrulanmadı. |
+| [#123](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/123) | Bu Sprint 3 kapanış raporu; ZIP’teki altı özgün PNG ve Markdown görsel bağlantıları eklendi. Nihai inceleme ve hocaya gönderim henüz doğrulanmadı. |
 
 ### Riskler ve açık işler
 
 - **Kabul:** #110 kapanmış olmasına rağmen #41 RP-07 tekrar koşulmalı ve ürün sahibi nihai kabulü kaydedilmeli.
 - **Tasarım:** #36 Figma bağlantısı 2 Kasım Pazartesi’ye kadar istendi; tasarım onayı bu çıktıya bağlı. #34 ürün adı/kimlik kararı da bekliyor.
 - **Süreç:** #100 açık; kutuların işaretli olması otomatik Done davranışını bu rapor için bağımsız doğrulamaz.
-- **Görsel teslim:** Özgün yedi PNG ve `docs/sprints/img/` Markdown bağlantıları tamamlanamadı; görüntü incelemeleri yukarıda başarı iddiasından ayrıldı.
+- **Görsel kanıt sınırı:** ZIP’teki altı PNG ve Markdown bağlantıları tamamlandı. Görüntülerin sürüm/ağ kayıtları yoktur; hata ekranları başarılı test veya nihai kabul kanıtı olarak kullanılmaz.
 - **Planlama:** [#114](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/114), [#115](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/115), [#116](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/116), [#117](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/117), [#118](https://github.com/Utkuuzun14/proje-yonetim-sistemi/pull/118) Hakan’ın kararıyla birleşmeden kapatıldı; gelecek sprint işleri kendi sprintinde kart sahibi tarafından açılacak. Bu PR’lar teslim edilmiş özellik değildir.
 - **Rapor teslimi:** Hakan raporu 1 Kasım 21.00’e kadar istedi; dışarı mesaj gönderilmedi, hocaya veya Hakan’a teslim edilmiş sayılmaz.
 
@@ -150,4 +177,4 @@ Kullanıcı mesajında “7 PNG” denmesine karşın bu çalışma sırasında 
 
 **Not / engel:** #110 güncel kayıtta kapalıdır; açık güvenlik hatası gibi raporlanmaz. Kalan kabul işi #41 RP-07 tekrar koşumu ve nihai kabul; tasarım işi #36 Figma çıktısı/onayıdır (#34 de açık). #100 pano otomasyonu/koruma kartı açık; kutuları işaretli olsa da beklenen otomatik Done davranışı bu rapor için bağımsız denenmedi. #114–#118 karar beklemiyor: Hakan’ın kararıyla birleşmeden kapalı; taslaklar referans olarak duruyor, gelecek sprint işleri ilgili sprintte kart sahibince ele alınacak. Hocaya gönderim, canlı demo provası veya #42’nin bütün süreç adımlarının tamamlandığı iddia edilmez.
 
-**Raporlama kaynağı ve sınırı:** 1 Kasım 2026’da GitHub bağlantısından okunan issue, PR ve inceleme kayıtları esas alınmıştır. Hakan’ın 1 Kasım Sprint 3 kapanış duyurusu ve Mert’e ilettiği rapor düzeltme mesajı, kullanıcının paylaştığı metinden esas alınmıştır (mesaj bağlantısı sağlanmadı). Duyurudaki hafta sonu talimatları ile sonradan gerçekleşen birleşme/kapanışlar ayrı tutulmuştur. Hakan’ın #96 kararları, #41 kabul kaydı, #110 devir kararı ve #111–#118 inceleme/karar kayıtları doğrulanmıştır. Utku’nun #123 incelemesindeki eski durum önerileri güncel kayıtlarla karşılaştırıldı: #41’de manuel kabul kaydı mevcut; #114–#118 artık kapalıdır. [Test Turu #1](../test/test-turlari/tur-01.md) tarihsel sonuçları korunmuştur. Bu güncellemede uygulama testleri yeniden çalıştırılmadı; test sonuçları kaynak kayıtların aktarımıdır.
+**Raporlama kaynağı ve sınırı:** Ekran görüntülerinin kaynağı kullanıcının yüklediği `sek-tech-rapor-4-gorseller.zip` arşividir; altı PNG’nin özgün içeriği korunmuştur. 1 Kasım 2026’da GitHub bağlantısından okunan issue, PR ve inceleme kayıtları esas alınmıştır. Hakan’ın 1 Kasım Sprint 3 kapanış duyurusu ve Mert’e ilettiği rapor düzeltme mesajı, kullanıcının paylaştığı metinden esas alınmıştır (mesaj bağlantısı sağlanmadı). Duyurudaki hafta sonu talimatları ile sonradan gerçekleşen birleşme/kapanışlar ayrı tutulmuştur. Hakan’ın #96 kararları, #41 kabul kaydı, #110 devir kararı ve #111–#118 inceleme/karar kayıtları doğrulanmıştır. Utku’nun #123 incelemesindeki eski durum önerileri güncel kayıtlarla karşılaştırıldı: #41’de manuel kabul kaydı mevcut; #114–#118 artık kapalıdır. [Test Turu #1](../test/test-turlari/tur-01.md) tarihsel sonuçları korunmuştur. Bu güncellemede uygulama testleri yeniden çalıştırılmadı; test sonuçları kaynak kayıtların aktarımıdır.
