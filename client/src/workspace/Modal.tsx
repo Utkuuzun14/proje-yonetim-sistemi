@@ -24,7 +24,7 @@ export function Modal({
       className="edit-dialog"
       ref={ref}
       aria-labelledby="dialog-title"
-      onCancel={onClose}
+      onCancel={(event) => { event.preventDefault(); onClose(); }}
     >
       <div className="dialog-heading">
         <h2 id="dialog-title">{title}</h2>
