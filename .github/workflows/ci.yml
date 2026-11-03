@@ -150,7 +150,8 @@ jobs:
     name: Tek komutla kurulum (Docker Compose)
     needs: detect
     if: needs.detect.outputs.has_compose == 'true'
-    runs-on: ubuntu-latest
+    # Playwright 1.56, ubuntu-latest (26.04) üzerinde tarayıcı kuramıyor
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: docker compose up
