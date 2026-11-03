@@ -39,8 +39,16 @@ test.describe('Projeler ve roller', () => {
   test('TS-ROL-04: Ekip Üyesi üyesi olmadığı projeyi listede görmez ve adresle açamaz', async ({ page }) => {
     // Seed: proje 2 ("Mobil Saha Yönetimi") yalnızca Abdulkahhar ve Ümit'e açık (#107)
     await login(page, SEED.member.email);
+    // Liste yüklenmeden "görünmüyor" denetimi anlamsız: önce üyesi olduğu proje gelmeli
+    await expect(page.getByRole('link', { name: 'SEK TECH Proje Yönetim Platformu' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Mobil Saha Yönetimi' })).toHaveCount(0);
+
+    const response = page.waitForResponse(
+      (r) => r.url().endsWith('/api/projects/2') && r.request().method() === 'GET',
+    );
     await page.goto('/uygulama/projeler/2');
+    expect((await response).status()).toBe(404);
+    await expect(page.locator('main').getByRole('alert')).toContainText('erişim iznin yok');
     await expect(page.locator('main')).not.toContainText('Mobil saha ekipleri');
   });
 
