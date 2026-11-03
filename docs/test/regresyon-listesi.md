@@ -55,10 +55,13 @@
 
 | ID | Senaryo | Seviye | Öncelik | Otomatik? | Kaynak |
 |---|---|---|---|---|---|
-| R-GRV-01 | Görev oluşturma, atama, doğrulama (başlık, durum, öncelik, tarih, proje üyesi) | API | Y | 🟡 test yazıldı (#125), #51 bekleniyor | TS-GRV-01/02/04 |
+| R-GRV-01 | Görev oluşturma, atama, doğrulama (başlık en fazla 150 karakter, tür Task/Bug/Feature, durum, öncelik, tarih, proje üyesi) | API | Y | 🟡 test yazıldı (#125), #51 bekleniyor | TS-GRV-01/02/04, Karar 11, 13 |
 | R-GRV-02 | Durum değişimi `task_status_history`'ye kim/eski/yeni yazar; geçersiz durumda değişmez | API | Y | 🟡 #125 | TS-GRV-03/05 |
 | R-GRV-03 | Filtreler: durum, kişi, tarih aralığı | API | O | 🟡 #125 | #51 |
 | R-GRV-04 | Ekip Üyesi görev silemez; silmede yorum + geçmiş kaskad | API | Y | 🟡 #125 | #51 |
+| R-GRV-05 | Ekip Üyesi üyesi olduğu projede görev oluşturur; üye olmadığı projede oluşturamaz | API | Y | 🟡 #125 | Karar 9 |
+| R-GRV-06 | Ekip Üyesi başkasına atayamaz, yalnız kendi görevini düzenler; durumu herkes değiştirir | API | Y | 🟡 #125 | TS-ROL-03, Karar 10 |
+| R-GRV-07 | `GET /api/tasks/:id/history` kronolojik kim/eski/yeni döner; üye olmayan göremez | API | Y | 🟡 #125 | US-05, Karar 12 |
 | R-KNB-01 | Kanban'da sürükle-bırak; yenilemede kalıcı | E2E | Y | ⏸ fixme, #51 + #50 | TS-KNB-01 |
 | R-KNB-02 | Sunucu hatasında kart eski sütuna döner | E2E | O | ⏸ fixme | TS-KNB-02 |
 | R-YRM-01 | Yorum ekleme; yazar sunucuda belirlenir; kronolojik | API | Y | 🟡 #125 | TS-YRM-01 |
@@ -82,4 +85,4 @@
 | R-M-03 | Boş / yükleniyor / hata durumları | Her ekran için |
 | R-M-04 | Sunum senaryosu (#113 MVP demo taslağı) baştan sona | Sunum sabahı smoke |
 
-**Özet (1 Kasım):** 25 senaryonun 20'si her PR'da CI'da otomatik koşuyor; görev/yorum testleri #51'i bekliyor, Kanban E2E'si #51 + #50'yi bekliyor.
+**Özet (3 Kasım):** Manuel 4 kontrol dışındaki 33 senaryonun 21'i her PR'da CI'da otomatik koşuyor; kalan 12'si bekliyor: görev/yorum testleri #51'i bekliyor, Kanban E2E'si #51 + #50'yi bekliyor.
