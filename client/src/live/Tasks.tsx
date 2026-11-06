@@ -13,6 +13,8 @@ const time = (value: string) => new Date(value).toLocaleString('tr-TR');
 function TaskEditor({project, value, onClose, onSaved}: {project: TaskProject; value?: Task; onClose:()=>void; onSaved:(t:Task)=>void}) {
   const {user}=useSession();
   const admin=user?.role==='Yönetici';
+  const [assigneeSelection,setAssigneeSelection]=useState(String(value?.assignee_id??''));
+  const formerAssignee=value?.assignee_id!=null && !project.members.some(m=>m.id===value.assignee_id);
   const [busy,setBusy]=useState(false);
   const saving=useRef(false);
   const [error,setError]=useState('');
@@ -25,11 +27,12 @@ function TaskEditor({project, value, onClose, onSaved}: {project: TaskProject; v
     const start=String(data.get('start_date')||''); const end=String(data.get('end_date')||'');
     if(!title || title.length>150) {setError('Görev başlığı 1-150 karakter olmalı.');return;}
     if(start && end && start>end) {setError('Bitiş tarihi başlangıçtan önce olamaz.');return;}
-    const assignee=Number(data.get('assignee_id')) || null;
-    if(admin && assignee !== null && !project.members.some(m=>m.id===assignee)) {setError('Sorumlu kişi proje üyesi olmalı.');return;}
+    const assignee=assigneeSelection===''?null:Number(assigneeSelection);
+    const assignmentChanged=!value || assignee!==value.assignee_id;
+    if(admin && assignmentChanged && assignee !== null && !project.members.some(m=>m.id===assignee)) {setError('Sorumlu kişi proje üyesi olmalı.');return;}
     const body={title,description:String(data.get('description')||''),type:String(data.get('type')),priority:String(data.get('priority')),
       start_date:start||null,end_date:end||null,
-      ...(admin ? {assignee_id:assignee} : !value ? {assignee_id:user.id} : {}),
+      ...(admin ? (assignmentChanged ? {assignee_id:assignee} : {}) : !value ? {assignee_id:user.id} : {}),
     };
     saving.current=true;setBusy(true);setError('');setDetails([]);
     try {
@@ -49,7 +52,7 @@ function TaskEditor({project, value, onClose, onSaved}: {project: TaskProject; v
           <label className="field"><span>Görev türü</span><select name="type" defaultValue={value?.type||'Task'}>{taskTypes.map(t=><option key={t}>{t}</option>)}</select></label>
           <label className="field"><span>Öncelik</span><select name="priority" defaultValue={value?.priority||'Medium'}>{priorities.map(p=><option key={p}>{p}</option>)}</select></label>
         </div>
-        {admin ? <label className="field"><span>Sorumlu kişi</span><select name="assignee_id" defaultValue={value?.assignee_id??''}><option value="">Atanmamış</option>{project.members.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
+        {admin ? <label className="field"><span>Sorumlu kişi</span><select name="assignee_id" value={assigneeSelection} onChange={e=>setAssigneeSelection(e.target.value)}><option value="">Atanmamış</option>{formerAssignee&&<option value={value.assignee_id!} disabled>Kullanıcı #{value.assignee_id} (artık proje üyesi değil)</option>}{project.members.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
           : <p>Sorumlu: {value?person(project.members,value.assignee_id):user?.name}. Atamayı yönetici değiştirebilir.</p>}
         <div className="form-grid"><Field id="task-start" name="start_date" type="date" label="Başlangıç tarihi" defaultValue={value?.start_date||''}/><Field id="task-end" name="end_date" type="date" label="Bitiş tarihi" defaultValue={value?.end_date||''}/></div>
         {error && <p role="alert" className="alert">{error}</p>}

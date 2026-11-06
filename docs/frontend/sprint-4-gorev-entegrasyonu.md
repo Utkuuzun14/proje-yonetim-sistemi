@@ -19,7 +19,7 @@
 | Üyeler | GET `/api/projects/:id` | data.members; yalnız bu listedeki kişilere atama |
 | Görev listesi | GET `/api/projects/:id/tasks` | data dizisi |
 | Oluştur | POST `/api/projects/:id/tasks` | title, description, type, priority, assignee_id, start_date, end_date |
-| Düzenle | PATCH `/api/tasks/:id` | Değiştirilebilir form alanları; Ekip Üyesi assignee_id göndermez |
+| Düzenle | PATCH `/api/tasks/:id` | Değiştirilebilir form alanları; Yönetici assignee_id alanını yalnız atama değiştiyse gönderir, Ekip Üyesi göndermez |
 | Durum | PATCH `/api/tasks/:id` | Yalnız `{status}`; ayrı /status adresi kullanılmaz |
 | Sil | DELETE `/api/tasks/:id` | 204 |
 | Yorum | GET/POST `/api/tasks/:id/comments` | POST yalnız `{content}`; yazar sunucuda belirlenir |
@@ -41,7 +41,7 @@ Bu alanlar #125'teki test/şema varsayımlarıyla uyumludur; yanıtların tam ş
 
 ## Doğrulama
 
-`cd client && npm run check`: lint, 64 test / 8 dosya, TypeScript ve üretim build başarılı. 14 yeni test; admin sayısal atama, üye kendi işi/başkasının işi, yalnız status PATCH, sürükle-bırak rollback, çift istek engeli, reload, 400 form koruma, tarih doğrulama, yorum XSS/metin koruma, 404/401, yanlış proje yanıtı, silme onayı.
+`cd client && npm run check`: lint, 69 test / 8 dosya, TypeScript ve üretim build başarılı. 19 yeni test; admin sayısal atama, üye kendi işi/başkasının işi, yalnız status PATCH, sürükle-bırak rollback, çift istek engeli, reload, 400 form koruma, tarih doğrulama, yorum XSS/metin koruma, 404/401, yanlış proje yanıtı, silme onayı.
 
 Bunlar React arayüzünü HTTP yanıtları taklit edilerek doğrular. Gerçek PostgreSQL/görev API'siyle veya tarayıcıda bu sprint akışı henüz doğrulanmadı. #51 ve #52 birleşince #125 API testleri ve #126 Kanban E2E senaryoları koşulmalı; iki ayrı kullanıcı oturumunda kalıcılık ve üyelik kaybı sınanmalıdır.
 
@@ -62,3 +62,9 @@ E2E kod incelemesi notu: #126 `TS-ROL-04` yalnız `main` içinde yasak açıklam
 ## Diğer kartlar
 
 #43 ve #98'in kodu PR #93 ile 1 Kasım'da develop'a girdi. #36'nın layout/kayıt/giriş kısmı tamam; Figma kullanıcı tercihi gereği hariç. #57 (Sprint 5), #64 (Sprint 6), #71 (Sprint 7), #78 (Sprint 8) ilgili API, sürüm veya sunum faaliyetlerini bekler. Önceden hazırlanan yerel takvim/rapor önizlemesi bu kartların gerçek API kabulü değildir.
+
+## 6 Kasım inceleme düzeltmesi — #127 / #128
+
+Projeden çıkarılmış kişiye atanmış görev düzenlenirken mevcut kişi ayrı, devre dışı bir seçenek olarak görünür. Başlık gibi başka bir alan değiştiğinde assignee_id gönderilmez; mevcut atama korunur. Yönetici açıkça atamayı kaldırırsa null, yeni bir proje üyesi seçerse onun sayısal kimliği gönderilir. Beş regresyon senaryosu eski üye, mevcut üye, atanmamış görev ve açık kaldırma/yeniden atamayı kapsar.
+
+#128 seçicileriyle uyum korunur: sütun adları, task-{id} ve görev başlığı + “ durumu” etiketi değişmedi. Kod incelemesinde TS-KNB-01 klavye adımının, geçmiş sorgusundan önce PATCH yanıtını beklemesi gerektiği görüldü: kart iyimser olarak taşındığı için yalnız Done görünürlüğü sunucu kaydını garanti etmez. Bu inceleme gerçek API E2E çalıştırması değildir. #126 TS-ROL-04 için önceki not ekip tarafından düzeltildi.

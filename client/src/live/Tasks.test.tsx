@@ -36,6 +36,28 @@ beforeEach(()=>{sessionStorage.setItem(SESSION_KEY,'saved');vi.stubEnv('VITE_API
 afterEach(()=>{sessionStorage.clear();vi.unstubAllGlobals();vi.unstubAllEnvs();});
 
 describe('Gerçek görev/Kanban sözleşme entegrasyonu',()=>{
+  it.each([99,2,null])('yönetici başlığı değiştirirken mevcut atamayı (%s) PATCH ile tekrar göndermez',async assignee=>{
+    const values=[{...initial,assignee_id:assignee}];
+    const fetcher=backend(admin,values);page();await open();
+    await userEvent.click(screen.getByRole('button',{name:'Görevi düzenle'}));
+    expect(screen.getByLabelText('Sorumlu kişi')).toHaveValue(assignee===null?'':String(assignee));
+    if(assignee===99)expect(screen.getByRole('option',{name:'Kullanıcı #99 (artık proje üyesi değil)'})).toBeDisabled();
+    await userEvent.clear(screen.getByLabelText('Görev başlığı'));await userEvent.type(screen.getByLabelText('Görev başlığı'),'Yeni başlık');
+    await userEvent.click(screen.getByRole('button',{name:'Görevi kaydet'}));
+    await screen.findByRole('button',{name:'Yeni başlık'});
+    expect(JSON.parse(fetcher.mock.calls.find(([,o])=>o?.method==='PATCH')![1]!.body!)).not.toHaveProperty('assignee_id');
+    expect(values[0].assignee_id).toBe(assignee);
+  });
+  it.each([['',null],['3',3]])('yönetici eski üyeye atamayı açıkça %s seçimine değiştirince gönderir',async (selection,expected)=>{
+    const values=[{...initial,assignee_id:99}];
+    const fetcher=backend(admin,values);page();await open();
+    await userEvent.click(screen.getByRole('button',{name:'Görevi düzenle'}));
+    await userEvent.selectOptions(screen.getByLabelText('Sorumlu kişi'),String(selection));
+    await userEvent.click(screen.getByRole('button',{name:'Görevi kaydet'}));
+    await screen.findByText('Görev kaydedildi.');
+    expect(JSON.parse(fetcher.mock.calls.find(([,o])=>o?.method==='PATCH')![1]!.body!)).toHaveProperty('assignee_id',expected);
+    expect(values[0].assignee_id).toBe(expected);
+  });
   it('proje üyelerinden sayısal kişi atar; tür/öncelik ile POST gönderir',async()=>{
     const fetcher=backend();page();await screen.findByRole('button',{name:'Kayıt formu'});
     await userEvent.click(screen.getByRole('button',{name:'Yeni görev'}));
