@@ -150,7 +150,8 @@ jobs:
     name: Tek komutla kurulum (Docker Compose)
     needs: detect
     if: needs.detect.outputs.has_compose == 'true'
-    runs-on: ubuntu-latest
+    # Playwright 1.56, ubuntu-latest (26.04) üzerinde tarayıcı kuramıyor
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: docker compose up
@@ -168,6 +169,23 @@ jobs:
             -d '{"email":"hakan@sektech.com","password":"Password123!"}' | grep -q '"token"'
           curl -fsS -o /dev/null http://localhost:5000/api/docs/
           echo "Smoke testi geçti ✅"
+      - name: "E2E testleri (Playwright, kart #53)"
+        if: hashFiles('e2e/package.json') != ''
+        working-directory: e2e
+        env:
+          CI: true
+          E2E_BASE_URL: http://localhost:3000
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - name: E2E raporu
+        if: failure() && hashFiles('e2e/package.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 14
       - name: Loglar (hata olursa)
         if: failure()
         run: docker compose logs
