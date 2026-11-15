@@ -73,7 +73,7 @@
 | Alan | Sprint | Senaryolar | Kart |
 |---|---|---|---|
 | Takvim / Gantt | 5 | TS-TKV-01…03, TS-GNT-01 | #57, #58 |
-| Dosyalar | 5 | TS-DSY-01…04 (tür, boyut, yetkisiz indirme) | #58, #59, #60 |
+| Dosyalar | 5 | TS-DSY-01…04 (tür, boyut, bayt imzası, yetkisiz indirme) — test yazıldı (`server/tests/api/files.api.test.js`), #58 bekleniyor | #58, #59, #60 |
 | Raporlar | 6 | TS-RPR-01…07 (bilinen seed ile beklenen değerler) | #65, #66, #67 |
 
 ## 7. Manuel kontroller (RC ve sunum öncesi)
