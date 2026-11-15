@@ -57,7 +57,9 @@ test.describe('Kanban (Sprint 4)', () => {
     await context.close();
 
     // Erişilebilirlik: klavye alternatifi aynı işi yapar
+    const savedByKeyboard = page.waitForResponse((r) => r.url().endsWith(`/api/tasks/${task.id}`) && r.request().method() === 'PATCH');
     await page.getByLabel(`${task.title} durumu`).selectOption('Done');
+    expect((await savedByKeyboard).status()).toBe(200);
     await expect(cardIn(page, 'Done', task.title)).toBeVisible();
 
     // Geçmiş: kim / eski / yeni (Karar 12)
