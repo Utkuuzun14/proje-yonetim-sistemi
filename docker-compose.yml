@@ -16,6 +16,7 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
       - ./database/migrations/002_gorev_turu.sql:/docker-entrypoint-initdb.d/01b-gorev-turu.sql:ro
+      - ./database/migrations/003_dosya_gorev_baglantisi.sql:/docker-entrypoint-initdb.d/01c-dosya-gorev.sql:ro
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d sektech"]
@@ -40,6 +41,10 @@ services:
       JWT_SECRET: dev-jwt-secret-key-sektech-2026
       # nginx tek güvenilen vekildir. Yayında API portu dışarı açılmamalıdır (#73).
       TRUST_PROXY: "true"
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      # Yüklenen dosyalar konteyner yeniden kurulsa da kalır; statik olarak sunulmaz (FR-14.1)
+      - uploads:/app/uploads
 
   client:
     build:
@@ -54,3 +59,4 @@ services:
 
 volumes:
   pgdata:
+  uploads:

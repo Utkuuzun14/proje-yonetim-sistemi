@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 require('dotenv').config({ quiet: true });
 
 const env = process.env.NODE_ENV || 'development';
@@ -18,6 +19,8 @@ const config = {
     maxFailures: Number(process.env.LOGIN_RATE_MAX_FAILURES) || 5,
   },
   corsOrigin: process.env.CORS_ORIGIN || '*',
+  // Yüklenen dosyalar (FR-13/14): statik olarak sunulmaz, yalnız GET /api/files/:id/download ile okunur
+  uploadDir: path.resolve(process.env.UPLOAD_DIR || path.join(__dirname, '..', '..', 'uploads')),
   trustProxy: process.env.TRUST_PROXY === 'true',
 };
 
