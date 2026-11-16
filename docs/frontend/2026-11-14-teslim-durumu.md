@@ -43,3 +43,11 @@ Rapor sözleşmesi yalnız `progress` ve `periodic?period=daily|weekly|monthly` 
 7. API'ler kabul edilince dosya yükle/indir ve üç rapor türünü ekle. Hazır olmayan modülü çalışıyormuş gibi sunma.
 
 Son sürümden alınacak görseller: proje listesi, Kanban, yorum/geçmiş, takvim, Gantt, dosyalar, raporlar ve dar ekran menüsü. Görsellerde kişisel/gerçek ekip verisi yerine izinli demo verisi kullanılmalı. Bu listede görsel üretilmiş veya prova yapılmış sayılmıyor.
+
+## 16 Kasım inceleme düzeltmesi
+
+#129: yerel `type=month` bağımlılığı kaldırıldı; Türkçe ay seçimi ve 1–9999 sınırlarında sayısal yıl alanı kullanılıyor. Ay okları yıl geçişinde iki alanı birlikte güncelliyor; boş/geçersiz yılda çizelge yerine hata gösteriliyor. Görevler başlangıç tarihine, eşit tarihte kimliğe göre sıralanıyor. 80 test / 9 dosya, lint, TypeScript ve build başarılı. Tarayıcılar arası manuel kabul yapılmış değildir.
+
+Tek tarihli görevlerin tek günlük gösterilmesi Hakan'ın kapsam kararını bekliyor. Mevcut davranış korundu, eksik başlangıç/bitiş açıklaması netleştirildi. `from/to` entegrasyonu ve eksik tarih listesinin nasıl korunacağı API kabulünde ele alınacak; şu anda filtreleme istemcide.
+
+#128: 09ccbe0 incelemesinde klavye durum değişiminin PATCH yanıtını beklediği doğrulandı; önceki yarış bulgusu giderilmiş. GitHub'dan test hazırlığına onay verildi. Testler fixme olduğundan gerçek API E2E kabulü değildir; #51/#127 sonrası etkinleştirilmelidir.

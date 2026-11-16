@@ -21,7 +21,7 @@ function setup(tasks:Task[]=[base],error=false){
  });vi.stubGlobal('fetch',fetcher);return fetcher;
 }
 function page(path='/uygulama/projeler/7/takvim'){render(<MemoryRouter initialEntries={[path]}><App/></MemoryRouter>);}
-async function month(){fireEvent.change(await screen.findByLabelText('Görüntülenen ay'),{target:{value:'2026-11'}});}
+async function month(){await userEvent.selectOptions(await screen.findByLabelText('Görüntülenen ay'),'11');fireEvent.change(screen.getByLabelText('Görüntülenen yıl'),{target:{value:'2026'}});}
 beforeEach(()=>{sessionStorage.setItem(SESSION_KEY,'saved');vi.stubEnv('VITE_API_URL','https://api.test/api');});
 afterEach(()=>{sessionStorage.clear();vi.unstubAllGlobals();vi.unstubAllEnvs();});
 describe('Takvim tarihleri',()=>{
@@ -38,6 +38,8 @@ describe('Gerçek takvim ekranı',()=>{
  await userEvent.click(screen.getByRole('button',{name:'Gantt'}));
  expect(screen.getByRole('table')).toBeVisible();expect(screen.getByLabelText(`${base.title}: 2026-10-30 – 2026-11-02`).firstChild).toHaveStyle({marginLeft:'0%',width:`${2/30*100}%`});
  });
+ it('ay/yıl seçimi yıl geçişini ve artık yılı destekler',async()=>{setup();page();await month();await userEvent.selectOptions(screen.getByLabelText('Görüntülenen ay'),'12');fireEvent.change(screen.getByLabelText('Görüntülenen yıl'),{target:{value:'2027'}});await userEvent.click(screen.getByRole('button',{name:'Sonraki ay'}));expect(screen.getByLabelText('Görüntülenen yıl')).toHaveValue(2028);expect(screen.getByLabelText('Görüntülenen ay')).toHaveValue('01');await userEvent.selectOptions(screen.getByLabelText('Görüntülenen ay'),'02');expect(screen.getByRole('region',{name:'2028-02-29'})).toBeVisible();fireEvent.change(screen.getByLabelText('Görüntülenen yıl'),{target:{value:''}});expect(screen.getByRole('alert')).toHaveTextContent('Geçerli bir ay seç');expect(screen.getByRole('button',{name:'Sonraki ay'})).toBeDisabled();});
+ it('Gantt başlangıç tarihine göre, eşit tarihlerde kimliğe göre sıralanır',async()=>{setup([{...base,id:3,title:'Son iş',start_date:'2026-11-02'},{...base,id:2,title:'İkinci iş'},base]);page();await month();await userEvent.click(screen.getByRole('button',{name:'Gantt'}));const rows=within(screen.getByRole('table')).getAllByRole('row');expect(rows[1]).toHaveTextContent('Aylar arası görev');expect(rows[2]).toHaveTextContent('İkinci iş');expect(rows[3]).toHaveTextContent('Son iş');});
  it('eksik tarihleri ayrı gösterir; arama ve boş durum çalışır',async()=>{setup([{...base,start_date:null}]);page();await month();expect(screen.getByRole('heading',{name:'Tarihleri eksik veya geçersiz görevler'})).toBeVisible();expect(screen.getByText('Bu ay ve arama için tarihli görev yok.')).toBeVisible();await userEvent.type(screen.getByLabelText('Görevlerde ara'),'eşleşmez');expect(screen.queryByRole('heading',{name:'Tarihleri eksik veya geçersiz görevler'})).not.toBeInTheDocument();});
  it('servis hatasında örnek veri göstermez, tekrar deneyebilir',async()=>{setup([],true);page();expect(await screen.findByRole('alert')).toHaveTextContent('Sunucu şu anda kullanılamıyor');setup();await userEvent.click(screen.getByRole('button',{name:'Tekrar dene'}));await month();expect(screen.getByText('1 görev bu ayla kesişiyor.')).toBeVisible();});
  it('başka projenin görev yanıtını reddeder',async()=>{setup([{...base,project_id:8}]);page();expect(await screen.findByRole('alert')).toHaveTextContent('sözleşmesiyle uyuşmuyor');expect(screen.queryByRole('region',{name:'Aylık takvim'})).not.toBeInTheDocument();});

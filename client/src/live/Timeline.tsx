@@ -31,7 +31,9 @@ function Timeline({projectId}: {projectId: number}) {
   const [error,setError] = useState('');
   const [version,setVersion] = useState(0);
   const [mode,setMode] = useState<'calendar'|'gantt'>('calendar');
-  const [month,setMonth] = useState(()=>{const now=new Date();return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;});
+  const [year,setYear] = useState(()=>String(new Date().getFullYear()));
+  const [monthPart,setMonthPart] = useState(()=>String(new Date().getMonth()+1).padStart(2,'0'));
+  const month = `${year.padStart(4,'0')}-${monthPart}`;
   const [query,setQuery] = useState('');
   useEffect(()=>{
     const controller = new AbortController();
@@ -40,16 +42,16 @@ function Timeline({projectId}: {projectId: number}) {
       .catch(e=>{if(!controller.signal.aborted)setError(taskError(e));});
     return ()=>controller.abort();
   },[projectId,version]);
-  const bounds=monthBounds(month);
+  const bounds=/^\d{1,4}$/.test(year) && Number(year)>=1 && Number(year)<=9999 ? monthBounds(month) : null;
   const filtered=data?.tasks.filter(t=>t.title.toLocaleLowerCase('tr').includes(query.toLocaleLowerCase('tr'))) || [];
-  const visible=bounds ? filtered.filter(t=>intersects(t,...bounds)) : [];
+  const visible=bounds ? filtered.filter(t=>intersects(t,...bounds)).sort((a,b)=>dayNumber(a.start_date)!-dayNumber(b.start_date)! || a.id-b.id) : [];
   const unscheduled=filtered.filter(t=>!taskRange(t));
   const days=bounds ? Array.from({length:bounds[1]-bounds[0]+1},(_,i)=>bounds[0]+i) : [];
   function retry(){setError('');setData(null);setVersion(v=>v+1);}
   function changeMonth(delta: number) {
     if(!bounds)return;
     const date=new Date(bounds[0]*DAY);date.setUTCMonth(date.getUTCMonth()+delta);
-    setMonth(date.toISOString().slice(0,7));
+    setYear(String(date.getUTCFullYear()));setMonthPart(String(date.getUTCMonth()+1).padStart(2,'0'));
   }
   return <>
     <Link to="/uygulama/takvim">← Takvim için proje seç</Link>
@@ -60,7 +62,8 @@ function Timeline({projectId}: {projectId: number}) {
         <Button aria-pressed={mode==='calendar'} onClick={()=>setMode('calendar')}>Takvim</Button>
         <Button aria-pressed={mode==='gantt'} onClick={()=>setMode('gantt')}>Gantt</Button>
         <Button aria-label="Önceki ay" disabled={!bounds || month<='0001-01'} onClick={()=>changeMonth(-1)}>←</Button>
-        <Field id="timeline-month" label="Görüntülenen ay" type="month" min="0001-01" max="9999-12" value={month} onChange={e=>setMonth(e.target.value)}/>
+        <label className="field"><span>Görüntülenen ay</span><select value={monthPart} onChange={e=>setMonthPart(e.target.value)}>{['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'].map((name,i)=><option key={name} value={String(i+1).padStart(2,'0')}>{name}</option>)}</select></label>
+        <Field id="timeline-year" label="Görüntülenen yıl" type="number" min={1} max={9999} step={1} value={year} onChange={e=>setYear(e.target.value)}/>
         <Button aria-label="Sonraki ay" disabled={!bounds || month>='9999-12'} onClick={()=>changeMonth(1)}>→</Button>
       </div>
       <Field id="timeline-search" label="Görevlerde ara" value={query} onChange={e=>setQuery(e.target.value)}/>
@@ -80,7 +83,7 @@ function Timeline({projectId}: {projectId: number}) {
           <tbody>{visible.map(t=>{const range=taskRange(t)!;const length=days.length;return <tr key={t.id}><th scope="row"><Link to={`/uygulama/projeler/${projectId}/gorevler`}>{t.title}</Link><small>{t.start_date} → {t.end_date} · {statusLabel[t.status]}</small></th><td><div className="gantt-track" aria-label={`${t.title}: ${t.start_date} – ${t.end_date}`}><span style={{marginLeft:`${(Math.max(range[0],bounds[0])-bounds[0])/length*100}%`,width:`${(Math.min(range[1],bounds[1])-Math.max(range[0],bounds[0])+1)/length*100}%`}}/></div></td></tr>;})}</tbody></table>
         </div>}
       </>}
-      {!!unscheduled.length && <Card><h2>Tarihleri eksik veya geçersiz görevler</h2><p>Bu görevler zaman çizelgesine yerleştirilemedi. Başlangıç ve bitiş tarihlerini kontrol et.</p><ul>{unscheduled.map(t=><li key={t.id}>{t.title} · {t.start_date || 'Başlangıç yok'} → {t.end_date || 'Bitiş yok'}</li>)}</ul></Card>}
+      {!!unscheduled.length && <Card><h2>Tarihleri eksik veya geçersiz görevler</h2><p>Başlangıç veya bitiş tarihi eksik ya da tarih aralığı geçersiz. Takvimde görünmesi için her iki tarih de geçerli olmalı ve bitiş başlangıçtan önce olmamalı.</p><ul>{unscheduled.map(t=><li key={t.id}>{t.title} · {t.start_date || 'Başlangıç yok'} → {t.end_date || 'Bitiş yok'}</li>)}</ul></Card>}
     </>}
   </>;
 }
