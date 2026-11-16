@@ -64,6 +64,10 @@ alanlarının altına yazılır.
   Üye olmayan kullanıcı proje detayında **404** alır (projenin varlığı sızdırılmaz).
 - Projeyi oluşturan, projenin sahibi (`owner_id`) ve üyesi olur.
 - Tarihler `YYYY-AA-GG` metni olarak döner (saat dilimi kayması yok); istekteki boş metin `null` sayılır.
+- Görevler (#51, #47 Karar 9–13): projenin her üyesi görev oluşturur ve durumu değiştirir. Ekip Üyesi yalnız kendine
+  atayabilir (atama gönderilmezse kendisine atanır) ve yalnız kendisine atanmış görevin diğer alanlarını düzenler;
+  atama değiştirme ve silme Yönetici'dedir (aksi 403). Başlık en fazla 150 karakter; tür `Task`/`Bug`/`Feature`
+  (varsayılan `Task`). Üye olmayan görev, yorum ve geçmiş uçlarında **404** alır.
 
 ## 4. Uç noktalar
 
@@ -83,9 +87,10 @@ alanlarının altına yazılır.
 | GET/PATCH/DELETE | `/api/projects/:id` | Proje detay + üyeler / güncelle / sil (Yönetici) | ✅ #44 |
 | POST | `/api/projects/:id/members` | Üye ekle (Yönetici) | ✅ #44 |
 | DELETE | `/api/projects/:id/members/:userId` | Üye çıkar (Yönetici) | ✅ #44 |
-| GET/POST | `/api/projects/:id/tasks` | Görevler (durum/kişi/tarih filtresi) / oluştur | 📝 #51 |
-| PATCH/DELETE | `/api/tasks/:id` | Görev güncelle (durum → geçmiş kaydı) / sil | 📝 #51 |
-| GET/POST | `/api/tasks/:id/comments` | Yorumlar | 📝 #51 |
+| GET/POST | `/api/projects/:id/tasks` | Görevler (`status`, `priority`, `type`, `assigneeId`, `from`/`to` filtreleri) / oluştur (projenin her üyesi) | ✅ #51 |
+| PATCH/DELETE | `/api/tasks/:id` | Görev güncelle (durum → geçmiş kaydı, aynı transaction) / sil (Yönetici) | ✅ #51 |
+| GET | `/api/tasks/:id/history` | Durum geçmişi, kronolojik (Karar 12) | ✅ #51 |
+| GET/POST | `/api/tasks/:id/comments` | Yorumlar, kronolojik / ekle (yazar sunucuda belirlenir) | ✅ #51 |
 | GET/POST | `/api/projects/:id/files` | Dosyalar / yükle | 📝 #58 |
 | GET | `/api/files/:id/download` | İndir | 📝 #58 |
 | GET | `/api/projects/:id/reports/progress` | İlerleme % ve kişi bazlı | 📝 #65 |
