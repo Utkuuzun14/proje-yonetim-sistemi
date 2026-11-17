@@ -5,6 +5,7 @@ import { Button, Card, Field } from '../components';
 import { Modal } from '../workspace/Modal';
 import { useSession } from './Session';
 import { LiveTasks } from './Tasks';
+import { LiveFiles } from './ProjectFiles';
 import { LiveTimeline } from './Timeline';
 
 type Project = { id: number; name: string; description?: string | null; start_date?: string | null; end_date?: string | null; owner_id?: number | null };
@@ -77,7 +78,7 @@ function ProjectEditor({value, onClose, onSaved}: {value?: Project; onClose: () 
     </form>
   </Modal>;
 }
-function ProjectList({tasks = false, timeline = false}: {tasks?: boolean; timeline?: boolean}) {
+function ProjectList({tasks = false, timeline = false, files = false}: {tasks?: boolean; timeline?: boolean; files?: boolean}) {
   const {user} = useSession();
   const {items, error, loading, reload} = useProjects();
   const [query, setQuery] = useState('');
@@ -86,13 +87,13 @@ function ProjectList({tasks = false, timeline = false}: {tasks?: boolean; timeli
   const admin = user?.role === 'Yönetici';
   const filtered = items.filter(p => `${p.name} ${p.description || ''}`.toLocaleLowerCase('tr').includes(query.toLocaleLowerCase('tr')));
   return <>
-    <div className="page-heading"><div><h1>{timeline ? 'Takvim ve Gantt' : tasks ? 'Görevler' : 'Projeler'}</h1><p>{timeline ? 'Takvimini görmek için bir proje seç.' : tasks ? 'Görevlerini görmek için bir proje seç.' : 'Hesabının erişebildiği projeler.'}</p></div>{admin && !tasks && !timeline && <Button onClick={() => setEditor('new')}>Yeni proje</Button>}</div>
+    <div className="page-heading"><div><h1>{files ? 'Dosyalar' : timeline ? 'Takvim ve Gantt' : tasks ? 'Görevler' : 'Projeler'}</h1><p>{files ? 'Dosyalarını görmek için bir proje seç.' : timeline ? 'Takvimini görmek için bir proje seç.' : tasks ? 'Görevlerini görmek için bir proje seç.' : 'Hesabının erişebildiği projeler.'}</p></div>{admin && !tasks && !timeline && !files && <Button onClick={() => setEditor('new')}>Yeni proje</Button>}</div>
     <Field id="api-search" label="Projelerde ara" value={query} onChange={e => setQuery(e.target.value)} />
     {notice && <p role="status" className="success">{notice}</p>}
     {loading && <p role="status">Projeler yükleniyor…</p>}
     {error && <div><p role="alert" className="alert">{error}</p><Button onClick={reload}>Tekrar dene</Button></div>}
     {!loading && !error && !filtered.length && <Card><p>{items.length ? 'Aramana uygun proje yok.' : 'Henüz erişebildiğin proje yok.'}</p></Card>}
-    {!loading && !error && <div className="project-grid">{filtered.map(p => <Card key={p.id}><h2><Link to={`/uygulama/projeler/${p.id}${timeline ? '/takvim' : tasks ? '/gorevler' : ''}`}>{p.name}</Link></h2><p>{p.description || 'Açıklama eklenmemiş.'}</p><p>{p.start_date?.slice(0,10) || '—'} → {p.end_date?.slice(0,10) || '—'}</p>{admin && !tasks && !timeline && <Button onClick={() => setEditor(p)}>Düzenle</Button>}</Card>)}</div>}
+    {!loading && !error && <div className="project-grid">{filtered.map(p => <Card key={p.id}><h2><Link to={`/uygulama/projeler/${p.id}${files ? '/dosyalar' : timeline ? '/takvim' : tasks ? '/gorevler' : ''}`}>{p.name}</Link></h2><p>{p.description || 'Açıklama eklenmemiş.'}</p><p>{p.start_date?.slice(0,10) || '—'} → {p.end_date?.slice(0,10) || '—'}</p>{admin && !tasks && !timeline && !files && <Button onClick={() => setEditor(p)}>Düzenle</Button>}</Card>)}</div>}
     {admin && editor && <ProjectEditor value={editor === 'new' ? undefined : editor} onClose={() => setEditor(null)} onSaved={() => {setEditor(null); setNotice('Proje kaydedildi.'); reload();}} />}
   </>;
 }
@@ -106,7 +107,7 @@ function ProjectDetail({id}: {id: string}) {
     {notice && <p role="status" className="success">{notice}</p>}
     {loading && <p role="status">Proje yükleniyor…</p>}
     {error && <><p role="alert" className="alert">{error}</p><Button onClick={reload}>Tekrar dene</Button></>}
-    {!loading && !error && p && <><h1>{p.name}</h1><p><Link to={`/uygulama/projeler/${p.id}/gorevler`}>Görevler ve Kanban</Link> · <Link to={`/uygulama/projeler/${p.id}/takvim`}>Takvim ve Gantt</Link></p><Card><p>{p.description || 'Açıklama eklenmemiş.'}</p><dl><dt>Başlangıç</dt><dd>{p.start_date?.slice(0,10) || 'Belirtilmedi'}</dd><dt>Bitiş</dt><dd>{p.end_date?.slice(0,10) || 'Belirtilmedi'}</dd></dl>{user?.role === 'Yönetici' && <Button onClick={() => setEditing(true)}>Projeyi düzenle</Button>}</Card>{editing && user?.role === 'Yönetici' && <ProjectEditor value={p} onClose={() => setEditing(false)} onSaved={() => {setEditing(false);setNotice('Proje kaydedildi.');reload();}} />}</>}
+    {!loading && !error && p && <><h1>{p.name}</h1><p><Link to={`/uygulama/projeler/${p.id}/gorevler`}>Görevler ve Kanban</Link> · <Link to={`/uygulama/projeler/${p.id}/takvim`}>Takvim ve Gantt</Link> · <Link to={`/uygulama/projeler/${p.id}/dosyalar`}>Dosyalar</Link></p><Card><p>{p.description || 'Açıklama eklenmemiş.'}</p><dl><dt>Başlangıç</dt><dd>{p.start_date?.slice(0,10) || 'Belirtilmedi'}</dd><dt>Bitiş</dt><dd>{p.end_date?.slice(0,10) || 'Belirtilmedi'}</dd></dl>{user?.role === 'Yönetici' && <Button onClick={() => setEditing(true)}>Projeyi düzenle</Button>}</Card>{editing && user?.role === 'Yönetici' && <ProjectEditor value={p} onClose={() => setEditing(false)} onSaved={() => {setEditing(false);setNotice('Proje kaydedildi.');reload();}} />}</>}
   </>;
 }
 function DetailRoute() {
@@ -117,5 +118,5 @@ function DetailRoute() {
 export function LiveWorkspace() {
   const {user, logout} = useSession();
   const [menuOpen,setMenuOpen]=useState(false);
-  return <div className="workspace"><a className="skip-link" href="#live-content">İçeriğe geç</a><aside id="live-menu" className={menuOpen ? "sidebar open" : "sidebar"} onKeyDown={e=>{if(e.key==='Escape'){setMenuOpen(false);document.getElementById('live-menu-toggle')?.focus();}}}><Link className="brand" to="/uygulama/projeler">SEK TECH</Link><nav aria-label="Hesap menüsü" onClick={()=>setMenuOpen(false)}><Link to="/uygulama/projeler">Projeler</Link><Link to="/uygulama/gorevler">Görevler</Link><Link to="/uygulama/takvim">Takvim ve Gantt</Link></nav><p>{user?.name}<br />{user?.role || 'Rol atanmamış'}</p></aside><div className="workspace-main"><header className="topbar"><button id="live-menu-toggle" className="menu-button" aria-controls="live-menu" aria-expanded={menuOpen} aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"} onClick={()=>setMenuOpen(v=>!v)}>Menü</button><Link to="/uygulama/projeler">Projeler</Link><span>{user?.name}</span><Button onClick={logout}>Çıkış yap</Button></header><main id="live-content" className="content" tabIndex={-1}><Routes><Route index element={<Navigate to="projeler" replace />} /><Route path="projeler" element={<ProjectList />} /><Route path="projeler/:id" element={<DetailRoute />} /><Route path="gorevler" element={<ProjectList tasks />} /><Route path="takvim" element={<ProjectList timeline />} /><Route path="projeler/:id/takvim" element={<LiveTimeline />} /><Route path="projeler/:id/gorevler" element={<LiveTasks />} /><Route path="*" element={<><h1>Sayfa bulunamadı</h1><Link to="/uygulama/projeler">Projelere dön</Link></>} /></Routes></main></div></div>;
+  return <div className="workspace"><a className="skip-link" href="#live-content">İçeriğe geç</a><aside id="live-menu" className={menuOpen ? "sidebar open" : "sidebar"} onKeyDown={e=>{if(e.key==='Escape'){setMenuOpen(false);document.getElementById('live-menu-toggle')?.focus();}}}><Link className="brand" to="/uygulama/projeler">SEK TECH</Link><nav aria-label="Hesap menüsü" onClick={()=>setMenuOpen(false)}><Link to="/uygulama/projeler">Projeler</Link><Link to="/uygulama/gorevler">Görevler</Link><Link to="/uygulama/takvim">Takvim ve Gantt</Link><Link to="/uygulama/dosyalar">Dosyalar</Link></nav><p>{user?.name}<br />{user?.role || 'Rol atanmamış'}</p></aside><div className="workspace-main"><header className="topbar"><button id="live-menu-toggle" className="menu-button" aria-controls="live-menu" aria-expanded={menuOpen} aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"} onClick={()=>setMenuOpen(v=>!v)}>Menü</button><Link to="/uygulama/projeler">Projeler</Link><span>{user?.name}</span><Button onClick={logout}>Çıkış yap</Button></header><main id="live-content" className="content" tabIndex={-1}><Routes><Route index element={<Navigate to="projeler" replace />} /><Route path="projeler" element={<ProjectList />} /><Route path="projeler/:id" element={<DetailRoute />} /><Route path="gorevler" element={<ProjectList tasks />} /><Route path="dosyalar" element={<ProjectList files />} /><Route path="projeler/:id/dosyalar" element={<LiveFiles />} /><Route path="takvim" element={<ProjectList timeline />} /><Route path="projeler/:id/takvim" element={<LiveTimeline />} /><Route path="projeler/:id/gorevler" element={<LiveTasks />} /><Route path="*" element={<><h1>Sayfa bulunamadı</h1><Link to="/uygulama/projeler">Projelere dön</Link></>} /></Routes></main></div></div>;
 }

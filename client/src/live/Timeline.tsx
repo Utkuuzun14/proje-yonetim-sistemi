@@ -12,6 +12,9 @@ export function dayNumber(value: string | null): number | null {
 }
 export function taskRange(value: Task): [number, number] | null {
   const start = dayNumber(value.start_date), end = dayNumber(value.end_date);
+  if ((value.start_date !== null && start === null) || (value.end_date !== null && end === null)) return null;
+  if (start === null && end !== null) return [end,end];
+  if (end === null && start !== null) return [start,start];
   return start !== null && end !== null && start <= end ? [start,end] : null;
 }
 export function intersects(value: Task, start: number, end: number) {
@@ -44,7 +47,7 @@ function Timeline({projectId}: {projectId: number}) {
   },[projectId,version]);
   const bounds=/^\d{1,4}$/.test(year) && Number(year)>=1 && Number(year)<=9999 ? monthBounds(month) : null;
   const filtered=data?.tasks.filter(t=>t.title.toLocaleLowerCase('tr').includes(query.toLocaleLowerCase('tr'))) || [];
-  const visible=bounds ? filtered.filter(t=>intersects(t,...bounds)).sort((a,b)=>dayNumber(a.start_date)!-dayNumber(b.start_date)! || a.id-b.id) : [];
+  const visible=bounds ? filtered.filter(t=>intersects(t,...bounds)).sort((a,b)=>taskRange(a)![0]-taskRange(b)![0] || a.id-b.id) : [];
   const unscheduled=filtered.filter(t=>!taskRange(t));
   const days=bounds ? Array.from({length:bounds[1]-bounds[0]+1},(_,i)=>bounds[0]+i) : [];
   function retry(){setError('');setData(null);setVersion(v=>v+1);}
@@ -56,7 +59,7 @@ function Timeline({projectId}: {projectId: number}) {
   return <>
     <Link to="/uygulama/takvim">← Takvim için proje seç</Link>
     <h1>{data ? `${data.project.name} · Takvim ve Gantt` : 'Takvim ve Gantt'}</h1>
-    <p>Görevlerin başlangıç ve bitiş tarihleri. Tarihleri değiştirmek için <Link to={`/uygulama/projeler/${projectId}/gorevler`}>Görevler ve Kanban</Link> ekranını kullan.</p>
+    <p>Görevlerin başlangıç ve bitiş tarihleri. Tek tarihi olan görevler o günde gösterilir. Tarihleri değiştirmek için <Link to={`/uygulama/projeler/${projectId}/gorevler`}>Görevler ve Kanban</Link> ekranını kullan.</p>
     {error ? <><p role="alert" className="alert">{error}</p><Button onClick={retry}>Tekrar dene</Button></> : !data ? <p role="status">Görev tarihleri yükleniyor…</p> : <>
       <div className="timeline-controls">
         <Button aria-pressed={mode==='calendar'} onClick={()=>setMode('calendar')}>Takvim</Button>
@@ -80,10 +83,10 @@ function Timeline({projectId}: {projectId: number}) {
           </div>
         </div> : <div className="timeline-scroll" role="region" aria-label="Salt okunur Gantt" tabIndex={0}>
           <table className="live-gantt"><caption>{month} · Görev zaman çizelgesi (başlangıç ve bitiş dahil)</caption><thead><tr><th scope="col">Görev / tarihler</th><th scope="col">Ay içindeki süre</th></tr></thead>
-          <tbody>{visible.map(t=>{const range=taskRange(t)!;const length=days.length;return <tr key={t.id}><th scope="row"><Link to={`/uygulama/projeler/${projectId}/gorevler`}>{t.title}</Link><small>{t.start_date} → {t.end_date} · {statusLabel[t.status]}</small></th><td><div className="gantt-track" aria-label={`${t.title}: ${t.start_date} – ${t.end_date}`}><span style={{marginLeft:`${(Math.max(range[0],bounds[0])-bounds[0])/length*100}%`,width:`${(Math.min(range[1],bounds[1])-Math.max(range[0],bounds[0])+1)/length*100}%`}}/></div></td></tr>;})}</tbody></table>
+          <tbody>{visible.map(t=>{const range=taskRange(t)!;const length=days.length;return <tr key={t.id}><th scope="row"><Link to={`/uygulama/projeler/${projectId}/gorevler`}>{t.title}</Link><small>{t.start_date || t.end_date} → {t.end_date || t.start_date}{(!t.start_date || !t.end_date) ? ' (tek tarih)' : ''} · {statusLabel[t.status]}</small></th><td><div className="gantt-track" aria-label={`${t.title}: ${t.start_date || t.end_date} – ${t.end_date || t.start_date}`}><span style={{marginLeft:`${(Math.max(range[0],bounds[0])-bounds[0])/length*100}%`,width:`${(Math.min(range[1],bounds[1])-Math.max(range[0],bounds[0])+1)/length*100}%`}}/></div></td></tr>;})}</tbody></table>
         </div>}
       </>}
-      {!!unscheduled.length && <Card><h2>Tarihleri eksik veya geçersiz görevler</h2><p>Başlangıç veya bitiş tarihi eksik ya da tarih aralığı geçersiz. Takvimde görünmesi için her iki tarih de geçerli olmalı ve bitiş başlangıçtan önce olmamalı.</p><ul>{unscheduled.map(t=><li key={t.id}>{t.title} · {t.start_date || 'Başlangıç yok'} → {t.end_date || 'Bitiş yok'}</li>)}</ul></Card>}
+      {!!unscheduled.length && <Card><h2>Tarihleri eksik veya geçersiz görevler</h2><p>Her iki tarih de boş ya da tarih aralığı geçersiz. Tek tarihi olan görevler, API ile aynı şekilde o günde gösterilir.</p><ul>{unscheduled.map(t=><li key={t.id}>{t.title} · {t.start_date || 'Başlangıç yok'} → {t.end_date || 'Bitiş yok'}</li>)}</ul></Card>}
     </>}
   </>;
 }
