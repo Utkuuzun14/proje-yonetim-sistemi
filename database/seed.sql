@@ -191,4 +191,3 @@ INSERT INTO comments (task_id, author_id, content) VALUES
 INSERT INTO files (project_id, uploader_id, name, type, size, storage_path) VALUES
 (1, 1, 'yol-haritasi.pdf', 'application/pdf', 1048576, '/uploads/docs/yol-haritasi.pdf'),
 (1, 6, 'er-diagram-v1.png', 'image/png', 245760, '/uploads/diagrams/er-diagram-v1.png');
-(1, 6, 'er-diagram-v1.png', 'image/png', 245760, '/uploads/diagrams/er-diagram-v1.png');
