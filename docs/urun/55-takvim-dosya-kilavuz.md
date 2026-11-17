@@ -1,46 +1,65 @@
 # Takvim/Gantt kabul seti ve kullanıcı kılavuzu akışları
 
-30 Ekim 2026 · #55 · Sprint 5 hazırlığı. Kod inceleme tabanı: PR #93 ce1edca. Manuel kabul koşulmadı.
+**Güncelleme Tarihi:** 17 Kasım 2026 · **Kart:** #55 · **Kilometre Taşı:** M3 — MVP & Ara Demo (22 Kasım 2026 Pazar)  
+**Test ve Kılavuz Sorumlusu:** Abdulkahhar Türkoğlu (Ürün Sahibi / Müşteri Temsilcisi)  
+**Kod İnceleme ve Entegrasyon Tabanı:** `develop` (`64def5d`) ve bekleyen PR'lar (`#132` Dosya API, `#134` Dosya Metadata Şeması, `#130` Dosya Güvenlik Testleri, `#57` Takvim/Gantt ve Dosya Ekranları).  
+**UAT Kararı:** Bekliyor (20 Kasım Cuma `develop` birleştirmesi sonrası canlı koşu ve onay yapılacak).
 
-## Sabit örnek veri
+---
 
-Etkinlik Sitesi projesi: A görevi 30 Ekim–2 Kasım, B görevi 1 Kasım tek gün, C tarihsiz, D 5–7 Kasım tamamlandı. A ve B farklı üyelere atanır. Test saati 3 Kasım 2026 Europe/Istanbul olarak sabitlenir; A gecikmiş, D tamamlanmış olmalıdır.
+## Kapsam Kararı ve Sabit Örnek Veri
+* **Kapsam Notu (14 Kasım Kararı):** Gantt görünümü sadeleştirilmiş olup mevcut görev tarihlerinden üretilen **salt okunur (read-only) zaman çizelgesi** olarak sunulacaktır; Gantt üzerinden sürükle-bırak tarih düzenleme ve milestone ekleme özellikleri dönem sonrasına bırakılmıştır.
+* **Sabit Örnek Veri ("Etkinlik Sitesi" Projesi):**
+  * **Görev A:** 18–20 Kasım 2026 (farklı üyeye atanmış; referans saati 21 Kasım alındığında gecikmiş görünür)
+  * **Görev B:** 19 Kasım 2026 (tek günlük görev, ikinci üyeye atanmış)
+  * **Görev C:** Tarihsiz görev
+  * **Görev D:** 15–17 Kasım 2026 (Tamamlandı / `Done`)
+  * *Not:* Test saati `21 Kasım 2026 Europe/Istanbul` olarak sabitlenerek gecikmiş (A) ve tamamlanmış (D) durumları doğrulanır.
 
-| Kod | İşlem | Beklenen | Mevcut kanıt / engel |
-|---|---|---|---|
-| T-01 | Ekim'den Kasım'a geç | A her iki ayda doğru aralıkta; B tek gün | Aylık önizleme var; manuel bekliyor |
-| T-02 | Görev çubuğunu aç | Aynı görev başlığı/tarih/sorumlu | Kodda detay akışı; manuel bekliyor |
-| T-03 | Haftalık görünümü seç | Seçili haftanın 7 günü, doğru görevler | Haftalık görünüm eksik |
-| T-04 | Gantt'ı aç | A/B aralıkları doğru; renk dışında metin | Önizleme var; manuel bekliyor |
-| T-05 | Tarihsiz/ters tarih ver | Tarihsiz iş kaybolmadan açıklanır; ters tarih reddedilir | Entegrasyon kabulü bekliyor |
-| T-06 | Milestone ekle/göster | Tek tarih işareti; görevle karışmaz | Milestone modeli/UI eksik; Gantt kapsamı hocaya sorulacak |
-| T-07 | Ay değiştir, dar ekran ve klavye kullan | Başlık/odak korunur; kontroller erişilir | Manuel bekliyor |
-| F-01 | Yetkili üye 2,5 MB PDF yükler; diğer üye indirir | Sunucuda kalıcı, iki kullanıcı aynı dosyaya erişir | Files API #58 bekliyor |
-| F-02 | 10 MB üstü dosya, sahte MIME ve yasak uzantı | 413/400; dosya/DB kaydı yok | Sunucu doğrulaması bekliyor |
-| F-03 | Proje dışı üye indirme URL'sini dener | Yetkisiz erişim reddedilir | API bekliyor |
+---
 
-SRS üst sınırı 10 MB'dır; mevcut önizleme sınırları 5 MB/dosya ve 25 MB/projedir. IndexedDB yalnız aynı tarayıcıda saklar; ekipçe dosya paylaşımı testinden geçer sayılmaz. Sınır değer testleri API uygulanınca 10 MB−1 bayt, tam 10 MB, 10 MB+1 bayt ile yapılır; “MB” birimi sözleşmede netleştirilir.
+## Takvim, Gantt ve Dosya Kabul Seti (T-01 – T-07 & F-01 – F-03)
 
-## Kullanıcı kılavuzu akışları
+| Kod | İşlem | Beklenen / Kabul Kanıtı | Mevcut Kanıt / Engel |
+| :--- | :--- | :--- | :--- |
+| **T-01** | Takvimde mevcut aydan sonraki aya geç | Çok günlük Görev A her iki aralıkta doğru hizalanır; tek günlük Görev B doğru günde görünür | Aylık görünüm kodda hazır; `#57` birleşimi sonrası canlı UAT bekliyor |
+| **T-02** | Takvim üzerindeki görev çubuğuna tıkla | Görev detay çekmecesi açılır; başlık, tarih aralığı ve sorumlu birebir tutarlıdır | Detay akışı `#129` içinde; birleşim sonrası canlı doğrulama bekliyor |
+| **T-03** | Haftalık görünüm sekmesini kontrol et | Seçili haftanın 7 günü ve o haftaya düşen görevler listelenir (kapsam dışıysa UI'da pasif/gizlidir) | Haftalık görünüm kapsam/ekran kontrolü UAT sırasında teyit edilecek |
+| **T-04** | Salt okunur Gantt (Zaman Çizelgesi) görünümünü aç | Görev A ve B tarih aralıkları doğru çizilir; erişilebilirlik için renk dışında metin etiketi bulunur | `#57` birleşimi sonrası canlı doğrulama bekliyor |
+| **T-05** | Tarihsiz görev (C) ve ters tarih (`bitiş < başlangıç`) dene | Tarihsiz iş takvimi bozmadan listede açıklanır; ters tarihli kayıt reddedilir | Entegrasyon ve doğrulama testi birleşim sonrası koşulacak |
+| **T-06** | Kapsam sınırı kontrolü (Milestone & Gantt düzenleme) | 14 Kasım kararı gereği salt okunur Gantt sunulur; eksik/dönem sonu özellikler demo kapsamı dışında tutulur | Kapsam kararı netleşti; sunumda şeffaf biçimde belirtilecek |
+| **T-07** | Ay değiştir, dar ekran (responsive) ve klavye ile gezin | Başlık ve odak korunur; kontroller klavye ile erişilebilir ve taşma yapmaz | Canlı UI/erişilebilirlik testi bekliyor |
+| **F-01** | Yetkili üye 2,5 MB PDF yükler; diğer üye ayrı oturumda indirir | Dosya sunucuda/staging ortamında kalıcıdır; iki kullanıcı aynı dosyaya erişip içeriği doğrular | `#132` (Dosya API) ve `#134` (Metadata DB) birleşimi bekliyor |
+| **F-02** | `10 MB + 1 bayt` dosya, sahte MIME ve yasak uzantı (`.exe`/`.sh`) yükle | API `413` / `400` döner; sunucu diski ve veritabanında kayıt oluşmaz | `#132` ve `#130` güvenlik testleri birleşimi bekliyor |
+| **F-03** | Proje dışı üye (Member C) dosya indirme uç noktasını dener | Yetkisiz erişim reddedilir (`403` / `404`); dosya içeriği ve `storage_path` sızdırılmaz | `#132` ve `#130` birleşimi sonrası canlı doğrulama bekliyor |
 
-### Gerçek proje çalışma alanı
+### Dosya Boyutu ve Depolama Sınır Değer Kuralları
+* **SRS v1.1 Üst Sınırı:** Dosya başına **10 MB** (proje bazlı kota kuralları API sözleşmesine tabidir). Yerel tarayıcı (IndexedDB) önbelleği çok kullanıcılı paylaşım kanıtı yerine geçmez; kabul testi mutlaka gerçek API ve veritabanı üzerinden yapılır.
+* **Sınır Değer Test Seti:** API birleşimi sonrası canlı testlerde `10 MB - 1 bayt` (kabul), `tam 10 MB` (kabul) ve `10 MB + 1 bayt` (`413 Payload Too Large` reddi) dosyalarıyla sınır doğrulaması yapılacaktır.
 
-Giriş → Projeler → Proje seç. Yönetici Yeni proje ile adını girer; tarih aralığını kontrol eder ve kaydeder. Hata varsa alan mesajını düzeltip yeniden dener. Ekip Üyesi yönetim işlemlerini kullanamaz. Kullanıcı/üyelik yönetimi ekranlarının tamamlandığı iddia edilmez.
+---
 
-### Önizleme takvim ve Gantt
+## Kullanıcı Kılavuzu Akışları
 
-Önizleme → Takvim → ay gezinme → görev çubuğu → görev detayı. Gantt sekmesinde görev tarih aralığını izle. Bu alan örnek/yerel veridir. Haftalık takvim ve milestone için tamamlanmış ekran yönergesi verilmez.
+### 1. Proje Çalışma Alanı Kurulumu
+* **Akış:** `Giriş` $\rightarrow$ `Projeler` $\rightarrow$ `Proje Seç` (veya Yönetici için `Yeni Proje`).
+* **Kullanım:** Yönetici (Admin) proje adını ve tarih aralığını girerek projeyi oluşturur ve ekip üyelerini atar. Hatalı tarih veya boş alan girildiğinde ekrandaki alan doğrulama mesajı düzeltilerek yeniden kaydedilir. Standart Ekip Üyesi (Member) proje silme veya rol değiştirme ayarlarını göremez.
 
-### Önizleme dosya listesi
+### 2. Takvim ve Salt Okunur Zaman Çizelgesi (Gantt)
+* **Akış:** `Proje Detayı` $\rightarrow$ `Takvim` / `Zaman Çizelgesi` $\rightarrow$ `Ay Gezinme (< >)` $\rightarrow$ `Görev Çubuğu` $\rightarrow$ `Görev Detayı`.
+* **Kullanım:** Kullanıcı aylık takvim ızgarasında veya salt okunur zaman çizelgesi (Gantt) görünümünde görevlerin başlangıç–bitiş sürelerini izler; herhangi bir görev çubuğuna tıkladığında sağ çekmecede görev detayını ve sorumlusunu görüntüler.
 
-Önizleme → Projeler → proje detayı → Dosyalar → dosya seç → listede ad/tür/boyut bilgisi → İndir. Silmeden önce doğru dosyayı seç. Boyut sınırı, depolama hatası veya izin hatasında mesajı oku; başka bir tarayıcıda dosyanın görünmesini bekleme.
+### 3. Dosya Paylaşımı ve Yönetimi
+* **Akış:** `Proje Detayı` $\rightarrow$ `Dosyalar` (veya `Görev Detayı` $\rightarrow$ `Ekler`) $\rightarrow$ `Dosya Seç ve Yükle` $\rightarrow$ `Listede Ad / Tür / Boyut Kontrolü` $\rightarrow$ `İndir / Sil`.
+* **Kullanım:** Yetkili üye geçerli formatta ve 10 MB altındaki belgeyi yükler; aynı projedeki diğer ekip üyeleri listeden dosyayı görüntüleyip indirebilir. Limit aşımı veya yetkisiz işlem durumunda sistemin döndürdüğü uyarı mesajı kullanıcıya gösterilir.
 
-### Gerçek dosya paylaşımı (API sonrası hedef akış)
+---
 
-Üye A giriş → proje Dosyalar → yükle → başarı; üye B ayrı tarayıcıda aynı projeye girer → indir → dosya boyutu/içerik doğrula. Proje dışı üye aynı bağlantıyla erişemez. Bu akışın çalıştığı henüz doğrulanmadı.
+## Dosya Listesi Bileşen Desteği
+* **İlgili Bileşenler:** `ProjectFiles.tsx` ve `files.ts`.
+* **Kabul Kriterleri:** Boş liste durum yönlendirmesi (empty state), dosya adı/türü/boyutu gösterimi, yükleniyor (loading) ve hata durumunda yeniden dene (retry) akışı, silme onayı ve `storage_path` bilgisinin istemciye açık URL olarak sızdırılmaması canlı UAT sırasında doğrulanacaktır.
 
-## Dosya listesi desteği
+---
 
-Mevcut bileşenler: client/src/workspace/ProjectFiles.tsx ve files.ts (PR #93). Liste için kabul: boş durum yönlendirmesi, ad/tür/boyut, indirme, silme geri bildirimi, limit ve depolama hatası. API entegrasyonunda yükleniyor/yeniden dene durumu ve erişim kontrolü korunmalı; storage_path istemciye açık dosya URL'si olarak verilmemeli.
-
-Kapanış için T/F senaryoları sürüm ve kanıtla yürütülmeli; gerçek iki kullanıcı paylaşımı/staging kanıtı, ürün sahibi kararı eklenmeli. Şimdiki çıktı test notları ve kılavuz akışlarıdır.
+## Çıkış Kapısı (Definition of Done)
+* `T-01` – `T-07` ve `F-01` – `F-03` senaryoları 20 Kasım Cuma `develop` birleştirmesi sonrası gerçek iki kullanıcı ve staging ortamı kanıtlarıyla koşulur; Ürün Sahibi (Abdulkahhar Türkoğlu) onayı ve test kanıtları bu dosyaya işlenerek `#55` kapatılır.
