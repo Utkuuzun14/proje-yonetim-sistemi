@@ -15,6 +15,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./database/migrations/002_gorev_turu.sql:/docker-entrypoint-initdb.d/01b-gorev-turu.sql:ro
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d sektech"]
