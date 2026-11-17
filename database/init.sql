@@ -130,6 +130,7 @@ COMMENT ON TABLE comments IS 'Görev detaylarında ekip üyelerinin iletişim ku
 CREATE TABLE files (
     id           SERIAL PRIMARY KEY,
     project_id   INT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    task_id      INT REFERENCES tasks(id) ON DELETE SET NULL,
     uploader_id  INT REFERENCES users(id) ON DELETE SET NULL,
     name         VARCHAR(255) NOT NULL,
     type         VARCHAR(100),
@@ -139,6 +140,8 @@ CREATE TABLE files (
 );
 
 COMMENT ON TABLE files IS 'Projeye yüklenen dokümanlar ve ekler';
+COMMENT ON COLUMN files.task_id IS 'Dosyanın bağlı olduğu görev (isteğe bağlı, aynı projeden olmalı)';
+COMMENT ON COLUMN files.storage_path IS 'Depolama anahtarı (UUID); orijinal ad kullanılmaz (FR-13.4)';
 
 -- -----------------------------------------------------------------------------
 -- İNDEKSLER (Performans ve Sorgu Optimizasyonu)
@@ -159,3 +162,4 @@ CREATE INDEX idx_task_history_task ON task_status_history(task_id);
 CREATE INDEX idx_task_history_changed_at ON task_status_history(changed_at);
 CREATE INDEX idx_comments_task ON comments(task_id);
 CREATE INDEX idx_files_project ON files(project_id);
+CREATE INDEX idx_files_task ON files(task_id);
