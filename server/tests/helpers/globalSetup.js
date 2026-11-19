@@ -7,7 +7,7 @@ const { TEST_DATABASE_URL } = require('./testDb');
 const DB_DIR = path.join(__dirname, '..', '..', '..', 'database');
 
 /**
- * Test VT'sini oluşturur (yoksa) ve Buğra'nın database/init.sql, migrations/ ve seed.sql dosyalarını yükler.
+ * Test VT'sini oluşturur (yoksa) ve Buğra'nın database/init.sql + seed.sql dosyalarını yükler.
  * Böylece testler her koşuda aynı, bilinen veriyle başlar.
  */
 module.exports = async () => {
@@ -33,14 +33,16 @@ module.exports = async () => {
   const client = new Client({ connectionString: TEST_DATABASE_URL });
   await client.connect();
   await client.query('SET client_min_messages TO WARNING');
-  // init.sql → migrations/*.sql (sırayla, yalnız ileri) → seed.sql: docker compose ile aynı sıra
-  const migrations = fs
-    .readdirSync(path.join(DB_DIR, 'migrations'))
-    .filter((f) => f.endsWith('.sql'))
-    .sort()
-    .map((f) => path.join('migrations', f));
-  for (const file of ['init.sql', ...migrations, 'seed.sql']) {
-    await client.query(fs.readFileSync(path.join(DB_DIR, file), 'utf8'));
+  await client.query(fs.readFileSync(path.join(DB_DIR, 'init.sql'), 'utf8'));
+
+  const migrationsDir = path.join(DB_DIR, 'migrations');
+  if (fs.existsSync(migrationsDir)) {
+    const migFiles = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
+    for (const mig of migFiles) {
+      await client.query(fs.readFileSync(path.join(migrationsDir, mig), 'utf8'));
+    }
   }
+
+  await client.query(fs.readFileSync(path.join(DB_DIR, 'seed.sql'), 'utf8'));
   await client.end();
 };
