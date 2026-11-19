@@ -26,6 +26,6 @@ hata olursa iz (trace), ekran görüntüsü ve video `playwright-report` artefak
 |---|---|
 | `auth.spec.js` | TS-AUTH-01, 04, 05, 07, 08, 09 |
 | `projects.spec.js` | TS-PRJ-01, 02 · TS-ROL-04, 05 · rol geçişi |
-| `kanban.spec.js` | TS-KNB-01, 02 — `fixme`, #51 + #50 bekleniyor |
+| `kanban.spec.js` | TS-KNB-01, 02 — sürükle-bırak, kalıcılık, geçmiş, hata durumunda geri dönüş |
 
 Testler seed kullanıcılarını kullanır (`database/seed.sql`) ve her koşuda benzersiz kayıt/proje adları üretir.
