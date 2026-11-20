@@ -22,4 +22,23 @@ async function logout(page) {
   await expect(page).toHaveURL(/\/giris/);
 }
 
-module.exports = { SEED, uniqueEmail, login, logout };
+// API üzerinden oturum aç (test verisini arayüzden bağımsız hazırlamak için)
+async function apiLogin(request, email, password = SEED.password) {
+  const res = await request.post('/api/auth/login', { data: { email, password } });
+  expect(res.ok()).toBeTruthy();
+  const { token, user } = (await res.json()).data;
+  return { user, headers: { Authorization: `Bearer ${token}` } };
+}
+
+// Görevi API ile oluşturur; testin sonunda deleteTask ile silinmeli
+async function createTask(request, auth, projectId, data) {
+  const res = await request.post(`/api/projects/${projectId}/tasks`, { headers: auth.headers, data });
+  expect(res.status()).toBe(201);
+  return (await res.json()).data;
+}
+
+const deleteTask = (request, auth, id) => request.delete(`/api/tasks/${id}`, { headers: auth.headers });
+
+const suffix = () => `${Date.now() % 1000000}`;
+
+module.exports = { SEED, uniqueEmail, login, logout, apiLogin, createTask, deleteTask, suffix };
