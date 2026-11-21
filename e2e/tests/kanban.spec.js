@@ -1,5 +1,5 @@
-// US-06 · TS-KNB-01/02 — ilk Kanban senaryosu (#53). Görev API'si (#51) ve gerçek Kanban ekranı (#50)
-// gelene kadar fixme; o PR'lar birleşince test.fixme → test yapılarak etkinleştirilecek.
+// US-06 · TS-KNB-01/02 — Kanban senaryoları (#53). Görev API'si (#51) ve Kanban ekranı (#50) üzerinde
+// gerçek API'ye karşı çalışır.
 const { test, expect } = require('@playwright/test');
 const { SEED, login } = require('./helpers');
 
@@ -36,7 +36,7 @@ test.describe('Kanban (Sprint 4)', () => {
     await request.delete(`/api/tasks/${task.id}`, { headers: admin.headers });
   });
 
-  test.fixme('TS-KNB-01: kart To Do → In Progress sürüklenir; yenilemede yerinde kalır, geçmiş kaydı oluşur', async ({ page, browser, request, baseURL }) => {
+  test('TS-KNB-01: kart To Do → In Progress sürüklenir; yenilemede yerinde kalır, geçmiş kaydı oluşur', async ({ page, browser, request, baseURL }) => {
     await login(page, SEED.member.email);
     await page.goto(BOARD_URL);
     await expect(cardIn(page, 'To Do', task.title)).toBeVisible();
@@ -71,7 +71,7 @@ test.describe('Kanban (Sprint 4)', () => {
     ]);
   });
 
-  test.fixme('TS-KNB-02: sunucu hata dönerse kart eski sütuna geri döner ve hata görünür', async ({ page }) => {
+  test('TS-KNB-02: sunucu hata dönerse kart eski sütuna geri döner ve hata görünür', async ({ page }) => {
     await login(page, SEED.member.email);
     await page.route(`**/api/tasks/${task.id}`, (route) =>
       route.request().method() === 'PATCH' ? route.fulfill({ status: 500, json: {} }) : route.continue(),
