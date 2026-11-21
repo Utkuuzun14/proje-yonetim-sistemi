@@ -3,12 +3,12 @@ info:
   title: SEK TECH Proje Yönetim Sistemi API
   version: 0.5.0
   description: |
-    API sözleşmesi **v0.5** (kart #30), kimlik doğrulama API'si (kart #37), RBAC ve proje API'si (kart #44).
+    API sözleşmesi **v0.5** (kart #30), kimlik doğrulama API'si (kart #37), RBAC ve proje API'si (kart #44), görev ve yorum API'si (kart #51).
 
     - Tüm yanıtlar JSON. Başarılı yanıt `{ "data": ... }`, hata yanıtı `{ "error": { "code", "message", "details?" } }`.
     - Kimlik doğrulama: `POST /api/auth/login` ile alınan token `Authorization: Bearer <token>` başlığında gönderilir.
     - Yetki (RBAC, #44): rol izinleri `roles.permissions` alanından her istekte okunur; yetkisiz işlem → 403 `FORBIDDEN`.
-    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`, `Projects`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
+    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`, `Projects`, `Tasks`, `Comments`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
       (`x-durum: planlandı`), ilgili sprint'te uygulanacak ve Sprint 2 sonunda (Hakan, #33) dondurulacaktır.
     - Seed kullanıcıları: `hakan@sektech.com` (Yönetici), `utku@sektech.com` (Ekip Üyesi) … parola `Password123!`.
 servers:
@@ -23,9 +23,9 @@ tags:
   - name: Projects
     description: Proje ve üyelik (M1) — uygulandı (#44)
   - name: Tasks
-    description: Görevler (M1) — planlandı, Sprint 4 (#51)
+    description: Görevler ve durum geçmişi (M1) — uygulandı (#51)
   - name: Comments
-    description: Görev yorumları (M4) — planlandı, Sprint 4 (#51)
+    description: Görev yorumları (M4) — uygulandı (#51)
   - name: Files
     description: Dosyalar (M4) — planlandı, Sprint 5 (#58)
   - name: Reports
@@ -338,80 +338,172 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
 
   # ---------------------------------------------------------------------------
-  # Planlanan uç noktalar (sözleşme taslağı v0.5)
+  # Görevler ve yorumlar — uygulandı (#51). Karar 9–13 (#47) bu bölüme işlendi.
   # ---------------------------------------------------------------------------
   /api/projects/{id}/tasks:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
       tags: [Tasks]
-      x-durum: planlandı
-      summary: Projedeki görevler (filtre — durum, kişi, tarih)
+      summary: Projedeki görevler (filtre — durum, öncelik, tür, kişi, tarih aralığı)
+      description: |
+        Proje üyeleri ve Yönetici görür; üye olmayan 404 alır (projenin varlığı sızdırılmaz, TS-ROL-04).
+        `from`/`to` takvim ve Gantt içindir (#58): aralıkla **kesişen** görevler döner. Tek tarihi olan görev o güne
+        yerleşir; hiç tarihi olmayan görev aralık sorgusunda dönmez.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: status, in: query, schema: { $ref: '#/components/schemas/TaskStatus' } }
-        - { name: assigneeId, in: query, schema: { type: integer } }
-        - { name: from, in: query, schema: { type: string, format: date } }
-        - { name: to, in: query, schema: { type: string, format: date } }
+        - { name: priority, in: query, schema: { $ref: '#/components/schemas/TaskPriority' } }
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/TaskType' } }
+        - { name: assigneeId, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: from, in: query, schema: { type: string, format: date }, description: 'YYYY-AA-GG' }
+        - { name: to, in: query, schema: { type: string, format: date }, description: 'YYYY-AA-GG; from tarihinden önce olamaz' }
       responses:
-        '200': { description: Görev listesi }
+        '200':
+          description: Görev listesi (id sırasıyla)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Task' } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
     post:
       tags: [Tasks]
-      x-durum: planlandı
-      summary: Görev oluştur
+      summary: Görev oluştur — projenin her üyesi (Karar 9)
+      description: |
+        Ekip Üyesi yalnız kendine atayabilir; `assignee_id` gönderilmezse görev kendisine atanır. Başkasına atama → 403 (Karar 10).
+        Yönetici projenin herhangi bir üyesine atayabilir; proje üyesi olmayan kişiye atama → 400 (TS-GRV-02).
+        Oluşturma, durum geçmişine `old_status: null` ile ilk kaydı yazar.
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/TaskInput' }
       responses:
-        '201': { description: Oluşturuldu }
+        '201':
+          description: Oluşturuldu
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /api/tasks/{id}:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     patch:
       tags: [Tasks]
-      x-durum: planlandı
-      summary: Görevi güncelle / durum değiştir / ata (durum değişimi geçmişe yazılır)
+      summary: Görevi güncelle / durum değiştir / ata — yalnız gönderilen alanlar değişir
+      description: |
+        - **Durum** (`status`): projenin her üyesi değiştirebilir. Değişiklik aynı transaction içinde
+          `task_status_history` tablosuna kim/eski/yeni olarak yazılır (FR-08); aynı duruma geçiş kayıt üretmez.
+        - **Diğer alanlar:** Yönetici her görevi, Ekip Üyesi yalnız kendisine atanmış görevi düzenler (Karar 10); aksi 403.
+        - **Atama** (`assignee_id` değişikliği): yalnız Yönetici; aksi 403. Proje dışı kişi → 400.
+        - Tarih sırası mevcut değerlerle birlikte denetlenir.
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/TaskInput' }
+            schema: { $ref: '#/components/schemas/TaskUpdateInput' }
       responses:
-        '200': { description: Güncellendi }
+        '200':
+          description: Güncellendi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
     delete:
       tags: [Tasks]
-      x-durum: planlandı
-      summary: Görevi sil (Yönetici)
+      summary: Görevi sil (Yönetici) — yorumları ve durum geçmişi birlikte silinir
       security: [{ bearerAuth: [] }]
       responses:
         '204': { description: Silindi }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/tasks/{id}/history:
+    parameters: [{ $ref: '#/components/parameters/Id' }]
+    get:
+      tags: [Tasks]
+      summary: Görevin durum geçmişi — kronolojik (Karar 12, FR-08, US-05)
+      description: |
+        v0.5 dondurulduktan sonra #47 Karar 12 ile eklendi (Karar 2 gereği gerekçe: US-05 "Geçmiş sekmesi", FR-08).
+        Salt okunurdur; geçmiş kayıtları API üzerinden değiştirilemez veya silinemez (FR-08.3).
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Durum değişiklikleri (eskiden yeniye)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/TaskHistory' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
   /api/tasks/{id}/comments:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
       tags: [Comments]
-      x-durum: planlandı
-      summary: Görev yorumları
+      summary: Görev yorumları — kronolojik
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Yorum listesi }
+        '200':
+          description: Yorum listesi (eskiden yeniye)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/Comment' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
     post:
       tags: [Comments]
-      x-durum: planlandı
-      summary: Yorum ekle
+      summary: Yorum ekle — projenin her üyesi; yazar sunucuda oturumdaki kullanıcıdır
+      description: İstemcinin gönderdiği `author_id` yok sayılır. İçerik olduğu gibi saklanır; HTML olarak işlenmemesi arayüzün sorumluluğudur.
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               required: [content]
               properties:
-                content: { type: string, minLength: 1 }
+                content: { type: string, minLength: 1, maxLength: 5000, description: 'Baştaki/sondaki boşluklar kırpılır; yalnız boşluk → 400' }
       responses:
-        '201': { description: Eklendi }
+        '201':
+          description: Eklendi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Comment' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
+  # ---------------------------------------------------------------------------
+  # Planlanan uç noktalar (sözleşme taslağı v0.5)
+  # ---------------------------------------------------------------------------
   /api/projects/{id}/files:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
@@ -564,16 +656,70 @@ components:
         description: { type: string, nullable: true }
         start_date: { type: string, format: date, nullable: true }
         end_date: { type: string, format: date, nullable: true }
-    TaskInput:
+    TaskPriority:
+      type: string
+      enum: [Low, Medium, High, Critical]
+    TaskType:
+      type: string
+      enum: [Task, Bug, Feature]
+      description: Görev türü (Karar 11)
+    Task:
       type: object
       properties:
-        title: { type: string, maxLength: 200 }
-        description: { type: string }
+        id: { type: integer }
+        project_id: { type: integer }
+        title: { type: string, maxLength: 150 }
+        description: { type: string, nullable: true }
         status: { $ref: '#/components/schemas/TaskStatus' }
-        priority: { type: string, enum: [Low, Medium, High, Critical] }
-        assignee_id: { type: integer, description: Proje üyesi olmalı }
-        start_date: { type: string, format: date }
-        end_date: { type: string, format: date }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        type: { $ref: '#/components/schemas/TaskType' }
+        assignee_id: { type: integer, nullable: true }
+        start_date: { type: string, format: date, nullable: true, example: '2026-11-05' }
+        end_date: { type: string, format: date, nullable: true, example: '2026-11-10' }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    TaskInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 150, description: 'Karar 13 / SRS FR-06: en fazla 150 karakter' }
+        description: { type: string, nullable: true, maxLength: 5000, description: Boş metin null sayılır }
+        status: { allOf: [{ $ref: '#/components/schemas/TaskStatus' }], default: To Do }
+        priority: { allOf: [{ $ref: '#/components/schemas/TaskPriority' }], default: Medium }
+        type: { allOf: [{ $ref: '#/components/schemas/TaskType' }], default: Task }
+        assignee_id: { type: integer, nullable: true, description: 'Proje üyesi olmalı. Ekip Üyesi yalnız kendi kimliğini gönderebilir; gönderilmezse görev kendisine atanır.' }
+        start_date: { type: string, format: date, nullable: true, description: 'YYYY-AA-GG; boş metin null sayılır' }
+        end_date: { type: string, format: date, nullable: true, description: 'start_date tarihinden önce olamaz' }
+    TaskUpdateInput:
+      type: object
+      minProperties: 1
+      description: TaskInput alanlarından en az biri. Yetki kuralları için PATCH /api/tasks/{id} açıklamasına bakın.
+      properties:
+        title: { type: string, minLength: 1, maxLength: 150 }
+        description: { type: string, nullable: true, maxLength: 5000 }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        type: { $ref: '#/components/schemas/TaskType' }
+        assignee_id: { type: integer, nullable: true }
+        start_date: { type: string, format: date, nullable: true }
+        end_date: { type: string, format: date, nullable: true }
+    TaskHistory:
+      type: object
+      properties:
+        id: { type: integer }
+        task_id: { type: integer }
+        old_status: { allOf: [{ $ref: '#/components/schemas/TaskStatus' }], nullable: true, description: Görev oluşturulduğunda null }
+        new_status: { $ref: '#/components/schemas/TaskStatus' }
+        changed_by_id: { type: integer, nullable: true, description: Kullanıcı silindiyse null }
+        changed_at: { type: string, format: date-time }
+    Comment:
+      type: object
+      properties:
+        id: { type: integer }
+        task_id: { type: integer }
+        author_id: { type: integer, nullable: true, description: Kullanıcı silindiyse null }
+        content: { type: string }
+        created_at: { type: string, format: date-time }
     Error:
       type: object
       properties:
