@@ -396,3 +396,35 @@ Kanban panosunun, filtrelerin ve MVP demosunun zengin bir veri setiyle doğrulan
 ### 6.5 CI ve Test Ortamı Uyumu
 
 `server/tests/helpers/globalSetup.js` güncellenerek test veritabanının sıfırdan kurulmasında `init.sql` sonrasında `database/migrations/` altındaki tüm `.sql` dosyalarının alfabetik sırayla otomatik çalıştırılması sağlanmıştır. Böylece yerel geliştirme, Docker Compose ve CI ortamlarında birebir aynı veri şeması garanti edilmiştir.
+
+---
+
+## 7. Sprint 5: Dosya Metadata Tablosu, Depolama Stratejisi ve Staging Ortamı (Issue #59)
+
+### 7.1 Dosya Metadata Tasarımı ve Göreve Dosya Bağlama (`003_dosya_gorev_baglantisi.sql`)
+
+Sprint 5 (Modül 4: Dokümantasyon & Dosya Paylaşımı) gereksinimleri ve Karar 11 kapsamında:
+- `files` tablosuna `task_id INT REFERENCES tasks(id) ON DELETE SET NULL` sütunu eklenmiştir. Böylece yüklenen bir doküman doğrudan bir görevle ilişkilendirilebilmektedir. Görevin silinmesi durumunda dosya veri tabanından ve depolamadan silinmez, yalnızca `task_id` alanı `NULL` yapılarak projeye bağlı kalmaya devam eder.
+- Görev dosyalarının hızlıca sorgulanabilmesi amacıyla `idx_files_task` indeksi eklenmiştir.
+
+### 7.2 Güvenli Depolama Stratejisi (UUID ve İzolasyon)
+
+SRS FR-13 ve FR-14 gereksinimleri doğrultusunda dosya saklama kuralları tanımlanmıştır:
+1. **Orijinal Dosya Adı İzolasyonu:** Yüklenen dosyanın orijinal adı (`name`) meta veri olarak veritabanında saklanır; dosya sistemindeki fiziksel dosya adı ise rastgele üretilen bir `UUID` (ör. `a8b2c3d4-...`) ile şifrelenir (`storage_path`). Bu sayede dizin atlama (path traversal) ve dosya adı çakışmaları tamamen önlenir.
+2. **Statik Sunum Yasağı (Direct Serving Block):** Yüklenen dosyalar public bir HTTP dizini altından doğrudan statik servis edilmez. Tüm indirmeler `/api/files/:id/download` uç noktası üzerinden JWT oturumu ve proje üyelik denetimi ile `res.download()` üzerinden servis edilir.
+3. **Boyut ve Tür Sınırları:** 10 MB dosya boyutu üst sınırı tanımlanmış; izin verilen MIME türleri (PDF, PNG, JPG, JPEG, TXT, DOCX, XLSX, ZIP) ve bayt imzası (magic byte) kontrolü ile doğrulanmıştır.
+
+### 7.3 Staging (Ön Yayın) Ortamı Kurulumu (`docker-compose.staging.yml`)
+
+Geliştirme ortamından bağımsız, prodüksiyon standartlarına sahip staging ortamı kurulmuştur:
+- **İzole Ağ ve Konteynerler:** `staging-db` (Postgres 15, `sektech_staging` VT), `staging-server` (Express API) ve `staging-client` (React + Nginx) izole köprü ağında (`staging-net`) çalışır.
+- **Port Ayrımı:** Yerel geliştirme portlarıyla (5433, 5000, 3000) çakışmayı önlemek için staging ortamı `5434:5432` (VT), `5001:5000` (API) ve `3001:80` (Arayüz) portlarını kullanır.
+- **Kalıcı Depolama (Persistent Volumes):** `staging_pgdata` ile veri tabanı verileri, `staging_uploads` ile yüklenen dokümanlar konteyner yeniden başlatmalarında korunur.
+- **Sağlık Kontrolleri:** Veri tabanı için `pg_isready`, backend için `/api/health` sağlık kontrolleri yapılandırılmıştır.
+- **Dağıtım Otomasyonu:** `scripts/staging-deploy.sh` ve `scripts/staging-deploy.ps1` betikleri ile tek komutla ayağa kaldırma ve otomatik HTTP doğrulama sağlanmıştır.
+
+### 7.4 Backend Dosya Servisi Entegrasyon Desteği (Mustafa - #58)
+
+Mustafa'nın dosya yükleme ve indirme API'sini geliştirmesini kolaylaştırmak üzere:
+- `files.repository.js` için `createFile({ projectId, taskId, uploaderId, name, type, size, storagePath })`, `findById(id)`, `listByProject(projectId)`, `listByTask(taskId)`, `deleteFile(id)` sorguları optimize edilmiştir.
+- `docker-compose.yml` ve staging yapılandırmasında `UPLOAD_DIR: /app/uploads` çevre değişkeni standartlaştırılmıştır.
