@@ -24,7 +24,7 @@ export function validateAuth(fields: AuthFields, register: boolean): string | nu
   if (register && (!/[A-ZÇĞİÖŞÜ]/.test(fields.password) || !/[a-zçğıöşü]/.test(fields.password) || !/[0-9]/.test(fields.password) || !/[^A-Za-z0-9ÇĞİÖŞÜçğıöşü\s]/.test(fields.password))) return 'Parolan büyük harf, küçük harf, rakam ve özel karakter içermeli.';
   return null;
 }
-export async function apiRequest<T>(path: string, options: { method?: string; body?: unknown; auth?: boolean; signal?: AbortSignal; expectData?: boolean } = {}): Promise<T> {
+export async function apiRequest<T>(path: string, options: { method?: string; body?: unknown; auth?: boolean; signal?: AbortSignal; expectData?: boolean; responseType?: 'blob'; timeoutMs?: number } = {}): Promise<T> {
   const base = import.meta.env.VITE_API_URL;
   if (!base) throw new Error('Sunucu bağlantısı henüz yapılandırılmadı. Şimdilik arayüz önizlemesini inceleyebilirsin.');
   const token = options.auth ? readToken() : null;
@@ -32,19 +32,21 @@ export async function apiRequest<T>(path: string, options: { method?: string; bo
     window.dispatchEvent(new Event(SESSION_EXPIRED));
     throw new ApiError('Oturumun sona erdi. Lütfen tekrar giriş yap.', 401);
   }
+  const multipart = options.body instanceof FormData;
   let response: Response;
   try {
     response = await fetch(`${base.replace(/\/$/, '')}${path}`, {
       method: options.method || 'GET', credentials: 'omit',
-      headers: { ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
-      signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000),
+      headers: { ...(options.body !== undefined && !multipart ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      ...(options.body !== undefined ? { body: multipart ? options.body as FormData : JSON.stringify(options.body) } : {}),
+      signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(options.timeoutMs ?? 15000)]) : AbortSignal.timeout(options.timeoutMs ?? 15000),
     });
   } catch (error) {
     if (options.signal?.aborted) throw error;
     if (error && typeof error === 'object' && 'name' in error && ['TimeoutError', 'AbortError'].includes(String(error.name))) throw new Error('Sunucu zamanında yanıt vermedi. Biraz sonra tekrar dene.', {cause: error});
     throw new Error('Sunucuya ulaşılamadı. Sunucu bağlantısını kontrol edip tekrar dene.', {cause: error});
   }
+  if (response.ok && options.responseType === 'blob') return await response.blob() as T;
   let payload;
   try { payload = await response.json(); } catch { payload = null; }
   if (!response.ok) {
@@ -52,6 +54,7 @@ export async function apiRequest<T>(path: string, options: { method?: string; bo
     const messages: Record<number, string> = {
       401: options.auth ? 'Oturumun sona erdi. Lütfen tekrar giriş yap.' : 'E-posta veya parola hatalı.',
       403: 'Bu işlem için erişim iznin yok.', 404: 'İstenen kayıt veya API uç noktası bulunamadı.',
+      413: 'Dosya boyutu sunucunun izin verdiği sınırı aşıyor (en fazla 10 MB).',
       409: 'Bu kayıt zaten var veya başka bir işlemle çakışıyor.', 429: 'Çok fazla deneme yapıldı. Biraz bekleyip tekrar dene.',
       503: 'Sunucu şu anda kullanılamıyor. Biraz sonra tekrar dene.',
     };

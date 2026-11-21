@@ -30,7 +30,7 @@ npm run test:coverage  # kapsam raporu → coverage/
 ```
 
 API testleri `TEST_DATABASE_URL` (varsayılan `sektech_test`) veri tabanını kullanır; yoksa oluşturur ve her koşuda
-`database/init.sql` + `seed.sql` yükler. Geliştirme VT'sine (`sektech`) dokunmaz. CI'da aynı testler her PR'da koşar.
+`database/init.sql`, `database/migrations/*.sql` (sırayla) ve `seed.sql` yükler. Geliştirme VT'sine (`sektech`) dokunmaz. CI'da aynı testler her PR'da koşar.
 
 ## Yapı
 

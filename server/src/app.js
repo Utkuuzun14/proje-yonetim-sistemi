@@ -26,7 +26,13 @@ function createApp(options = {}) {
   app.use('/api/health', require('./modules/health/health.routes'));
   app.use('/api/auth', require('./modules/auth/auth.routes').createAuthRouter(options));
   app.use('/api/users', require('./modules/users/users.routes'));
+  const taskRoutes = require('./modules/tasks/tasks.routes');
+  app.use('/api/projects/:id/tasks', taskRoutes.projectTasks);
   app.use('/api/projects', require('./modules/projects/projects.routes'));
+  app.use('/api/tasks', taskRoutes.tasks);
+  const fileRoutes = require('./modules/files/files.routes');
+  app.use('/api/projects/:id/files', fileRoutes.projectFiles);
+  app.use('/api/files', fileRoutes.files);
 
   app.use(notFound);
   app.use(errorHandler);
