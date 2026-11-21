@@ -1,0 +1,208 @@
+# CI hattı — kart #39 (Sprint 2)
+# Her PR'da ve develop/main'e push'ta çalışır. Teknoloji yığını henüz kesinleşmediği için
+# client/ ve server/ klasörlerinde hangi proje dosyası varsa (package.json, requirements.txt,
+# pom.xml) ona uygun build + test adımlarını kendisi seçer. Karar netleşince sadeleştirilecek.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    name: Proje algılama
+    runs-on: ubuntu-latest
+    outputs:
+      node_dirs: ${{ steps.scan.outputs.node_dirs }}
+      python_dirs: ${{ steps.scan.outputs.python_dirs }}
+      java_dirs: ${{ steps.scan.outputs.java_dirs }}
+      has_compose: ${{ steps.scan.outputs.has_compose }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: scan
+        run: |
+          node=(); py=(); java=()
+          for d in client server; do
+            [ -f "$d/package.json" ] && node+=("\"$d\"")
+            { [ -f "$d/requirements.txt" ] || [ -f "$d/pyproject.toml" ]; } && py+=("\"$d\"")
+            { [ -f "$d/pom.xml" ] || [ -f "$d/build.gradle" ] || [ -f "$d/build.gradle.kts" ]; } && java+=("\"$d\"")
+          done
+          join() { local IFS=,; echo "[$*]"; }
+          echo "node_dirs=$(join "${node[@]}")"     >> "$GITHUB_OUTPUT"
+          echo "python_dirs=$(join "${py[@]}")"     >> "$GITHUB_OUTPUT"
+          echo "java_dirs=$(join "${java[@]}")"     >> "$GITHUB_OUTPUT"
+          if [ -f docker-compose.yml ] && [ -f server/Dockerfile ]; then echo "has_compose=true" >> "$GITHUB_OUTPUT"; else echo "has_compose=false" >> "$GITHUB_OUTPUT"; fi
+          echo "Node: ${node[*]:-yok} | Python: ${py[*]:-yok} | Java: ${java[*]:-yok}"
+
+  node:
+    name: Node (${{ matrix.dir }})
+    needs: detect
+    if: needs.detect.outputs.node_dirs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.detect.outputs.node_dirs) }}
+    # API testleri gerçek PostgreSQL ile koşar (database/init.sql + seed.sql testlerde yüklenir)
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sektech
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d sektech"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://admin:password@localhost:5433/sektech_test
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Bağımlılıklar
+        run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Build
+        run: npm run build --if-present
+      - name: Test
+        run: |
+          if [ "${{ matrix.dir }}" = "server" ]; then npm run test:coverage; else npm test --if-present; fi
+        env:
+          CI: true
+      - name: Kapsam raporu
+        if: always() && matrix.dir == 'server' && hashFiles('server/coverage/coverage-summary.json', 'server/coverage/lcov.info') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.dir }}
+          path: ${{ matrix.dir }}/coverage
+          retention-days: 14
+
+  python:
+    name: Python (${{ matrix.dir }})
+    needs: detect
+    if: needs.detect.outputs.python_dirs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.detect.outputs.python_dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bağımlılıklar
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install .; fi
+          pip install pytest
+      - name: Test
+        run: |
+          if [ -f manage.py ]; then python manage.py test; else pytest; fi
+
+  java:
+    name: Java (${{ matrix.dir }})
+    needs: detect
+    if: needs.detect.outputs.java_dirs != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: ${{ fromJSON(needs.detect.outputs.java_dirs) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build + test
+        run: |
+          if [ -f pom.xml ]; then
+            if [ -f mvnw ]; then ./mvnw -B verify; else mvn -B verify; fi
+          else
+            if [ -f gradlew ]; then ./gradlew build; else gradle build; fi
+          fi
+
+  # M2 kabul kriteri: "sistem tek komutla kuruluyor" — compose ile ayağa kaldırıp smoke testi yapar
+  compose:
+    name: Tek komutla kurulum (Docker Compose)
+    needs: detect
+    if: needs.detect.outputs.has_compose == 'true'
+    # Playwright 1.56, ubuntu-latest (26.04) üzerinde tarayıcı kuramıyor
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose up
+        run: docker compose up --build -d --wait --wait-timeout 180
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tam sistem smoke testi
+        run: node scripts/compose-smoke.mjs
+      - name: Smoke testi (health + giriş)
+        run: |
+          curl -fsS http://localhost:5000/api/health
+          curl -fsS -X POST http://localhost:5000/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d '{"email":"hakan@sektech.com","password":"Password123!"}' | grep -q '"token"'
+          curl -fsS -o /dev/null http://localhost:5000/api/docs/
+          echo "Smoke testi geçti ✅"
+      - name: "E2E testleri (Playwright, kart #53)"
+        if: hashFiles('e2e/package.json') != ''
+        working-directory: e2e
+        env:
+          CI: true
+          E2E_BASE_URL: http://localhost:3000
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+      - name: E2E raporu
+        if: failure() && hashFiles('e2e/package.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          retention-days: 14
+      - name: Loglar (hata olursa)
+        if: failure()
+        run: docker compose logs
+      - name: Kapat
+        if: always()
+        run: docker compose down -v
+
+  # Branch kurallarında "zorunlu kontrol" olarak bu iş seçilir; adı sabit kalmalı.
+  ci-ok:
+    name: CI sonucu
+    needs: [detect, node, python, java, compose]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tüm işler başarılı mı?
+        run: |
+          for r in "${{ needs.detect.result }}" "${{ needs.node.result }}" "${{ needs.python.result }}" "${{ needs.java.result }}" "${{ needs.compose.result }}"; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then echo "CI başarısız ($r)"; exit 1; fi
+          done
+          echo "CI yeşil ✅"

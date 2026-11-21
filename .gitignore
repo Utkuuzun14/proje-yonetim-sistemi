@@ -10,6 +10,10 @@ node_modules/
 dist/
 build/
 coverage/
+*.tsbuildinfo
+
+# Yüklenen dosyalar (yerel geliştirme)
+server/uploads/
 
 # Loglar
 *.log
@@ -20,3 +24,7 @@ npm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# Playwright
+test-results/
+playwright-report/
