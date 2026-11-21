@@ -82,16 +82,20 @@ CREATE TABLE tasks (
     description TEXT,
     status      VARCHAR(50) NOT NULL DEFAULT 'To Do',
     priority    VARCHAR(20) NOT NULL DEFAULT 'Medium',
+    type        VARCHAR(20) NOT NULL DEFAULT 'Task',
     assignee_id INT REFERENCES users(id) ON DELETE SET NULL,
     start_date  DATE,
     end_date    DATE,
     created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_tasks_type CHECK (type IN ('Task', 'Bug', 'Feature')),
+    CONSTRAINT chk_tasks_dates CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date)
 );
 
 COMMENT ON TABLE tasks IS 'Proje kapsamındaki görevler (To Do / In Progress / Done)';
 COMMENT ON COLUMN tasks.status IS 'Görev durumu (To Do, In Progress, In Review, Done vb.)';
 COMMENT ON COLUMN tasks.priority IS 'Öncelik düzeyi (Low, Medium, High, Critical)';
+COMMENT ON COLUMN tasks.type IS 'Görev türü: Task, Bug, Feature (Karar 11)';
 
 -- -----------------------------------------------------------------------------
 -- 6. TASK_STATUS_HISTORY (Görev Durum Geçmişi - Raporlama için Zorunlu)
@@ -126,6 +130,7 @@ COMMENT ON TABLE comments IS 'Görev detaylarında ekip üyelerinin iletişim ku
 CREATE TABLE files (
     id           SERIAL PRIMARY KEY,
     project_id   INT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    task_id      INT REFERENCES tasks(id) ON DELETE SET NULL,
     uploader_id  INT REFERENCES users(id) ON DELETE SET NULL,
     name         VARCHAR(255) NOT NULL,
     type         VARCHAR(100),
@@ -135,6 +140,8 @@ CREATE TABLE files (
 );
 
 COMMENT ON TABLE files IS 'Projeye yüklenen dokümanlar ve ekler';
+COMMENT ON COLUMN files.task_id IS 'Dosyanın bağlı olduğu görev (isteğe bağlı, aynı projeden olmalı)';
+COMMENT ON COLUMN files.storage_path IS 'Depolama anahtarı (UUID); orijinal ad kullanılmaz (FR-13.4)';
 
 -- -----------------------------------------------------------------------------
 -- İNDEKSLER (Performans ve Sorgu Optimizasyonu)
@@ -149,7 +156,10 @@ CREATE INDEX idx_project_members_user ON project_members(user_id);
 CREATE INDEX idx_tasks_project ON tasks(project_id);
 CREATE INDEX idx_tasks_assignee ON tasks(assignee_id);
 CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE INDEX idx_tasks_type ON tasks(type);
+CREATE INDEX idx_tasks_project_dates ON tasks(project_id, start_date, end_date);
 CREATE INDEX idx_task_history_task ON task_status_history(task_id);
 CREATE INDEX idx_task_history_changed_at ON task_status_history(changed_at);
 CREATE INDEX idx_comments_task ON comments(task_id);
 CREATE INDEX idx_files_project ON files(project_id);
+CREATE INDEX idx_files_task ON files(task_id);
