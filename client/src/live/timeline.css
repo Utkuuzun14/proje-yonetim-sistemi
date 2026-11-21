@@ -1,0 +1,15 @@
+.timeline-controls {display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:20px 0}
+.timeline-controls .field {margin:0}
+.timeline-controls [aria-pressed="true"] {outline:3px solid #176b58;outline-offset:3px}
+.timeline-scroll {overflow:auto;max-width:100%;margin:20px 0}
+.live-calendar {display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));min-width:740px;gap:1px;background:#d5dfd9;border:1px solid #d5dfd9}
+.live-calendar > strong {background:#eef4f0;padding:10px}
+.live-calendar > section,.live-calendar > div {background:white;min-height:100px;padding:8px}
+.calendar-task {display:block;background:#eef4f0;border-left:3px solid #176b58;padding:5px;margin-top:5px;overflow-wrap:anywhere;font-size:13px}
+.calendar-task small,.live-gantt small {display:block;font-weight:normal}
+.live-gantt {width:100%;min-width:640px;border-collapse:collapse}
+.live-gantt caption {text-align:left;padding:12px 0}
+.live-gantt th,.live-gantt td {text-align:left;border-bottom:1px solid #d5dfd9;padding:12px}
+.live-gantt th:first-child {width:40%;overflow-wrap:anywhere}
+.gantt-track {background:#eef4f0;min-width:260px;border-radius:4px}
+.gantt-track span {display:block;height:20px;background:#176b58;border-radius:4px}
