@@ -3,12 +3,12 @@ info:
   title: SEK TECH Proje Yönetim Sistemi API
   version: 0.5.0
   description: |
-    API sözleşmesi **v0.5** (kart #30), kimlik doğrulama API'si (kart #37), RBAC ve proje API'si (kart #44), görev ve yorum API'si (kart #51).
+    API sözleşmesi **v0.5** (kart #30), kimlik doğrulama API'si (kart #37), RBAC ve proje API'si (kart #44), görev ve yorum API'si (kart #51), dosya API'si (kart #58).
 
     - Tüm yanıtlar JSON. Başarılı yanıt `{ "data": ... }`, hata yanıtı `{ "error": { "code", "message", "details?" } }`.
     - Kimlik doğrulama: `POST /api/auth/login` ile alınan token `Authorization: Bearer <token>` başlığında gönderilir.
     - Yetki (RBAC, #44): rol izinleri `roles.permissions` alanından her istekte okunur; yetkisiz işlem → 403 `FORBIDDEN`.
-    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`, `Projects`, `Tasks`, `Comments`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
+    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`, `Projects`, `Tasks`, `Comments`, `Files`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
       (`x-durum: planlandı`), ilgili sprint'te uygulanacak ve Sprint 2 sonunda (Hakan, #33) dondurulacaktır.
     - Seed kullanıcıları: `hakan@sektech.com` (Yönetici), `utku@sektech.com` (Ekip Üyesi) … parola `Password123!`.
 servers:
@@ -27,7 +27,7 @@ tags:
   - name: Comments
     description: Görev yorumları (M4) — uygulandı (#51)
   - name: Files
-    description: Dosyalar (M4) — planlandı, Sprint 5 (#58)
+    description: Dosya yükleme ve indirme (M4) — uygulandı (#58)
   - name: Reports
     description: Raporlama (M5) — planlandı, Sprint 6 (#65)
 
@@ -502,44 +502,91 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
 
   # ---------------------------------------------------------------------------
-  # Planlanan uç noktalar (sözleşme taslağı v0.5)
+  # Dosyalar — uygulandı (#58, SRS FR-13/FR-14)
   # ---------------------------------------------------------------------------
   /api/projects/{id}/files:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
       tags: [Files]
-      x-durum: planlandı
-      summary: Proje dosyaları
+      summary: Proje dosyaları — yeniden eskiye
+      description: Projenin üyeleri ve Yönetici görür. Üye olmayan → 403 (FR-14.2), proje yoksa 404. Depolama anahtarı yanıtta yer almaz.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: taskId, in: query, schema: { type: integer, minimum: 1 }, description: Yalnız bu göreve bağlı dosyalar (Karar 11) }
       responses:
-        '200': { description: Dosya listesi }
+        '200':
+          description: Dosya listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { $ref: '#/components/schemas/File' } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
     post:
       tags: [Files]
-      x-durum: planlandı
-      summary: Dosya yükle (multipart, tür ve boyut sınırlı)
+      summary: Dosya yükle (multipart) — projenin her üyesi
+      description: |
+        - Tek dosya, `file` alanı, en fazla **10 MB** (FR-13.1) → aşarsa 413 `PAYLOAD_TOO_LARGE`.
+        - İzin verilen uzantılar: `.pdf`, `.png`, `.jpg`, `.jpeg`, `.docx`, `.xlsx`, `.zip` (FR-13.2). Uzantı son noktadan
+          sonrasıdır (`rapor.pdf.exe` → `.exe`, reddedilir).
+        - İçerik bayt imzasıyla doğrulanır (FR-13.3); imza uzantıyla uyuşmazsa 400. `type` alanı istemcinin beyanından
+          değil bu doğrulamadan gelir.
+        - Dosya diskte UUID anahtarla saklanır (FR-13.4); adındaki yol parçaları atılır, ad yalnız gösterim içindir.
+        - Erişim gövde okunmadan önce denetlenir: üye olmayan 403 alır ve dosyası sunucuya hiç yazılmaz.
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
               type: object
+              required: [file]
               properties:
                 file: { type: string, format: binary }
+                task_id: { type: integer, description: 'İsteğe bağlı: dosyayı aynı projedeki bir göreve bağlar (Karar 11)' }
       responses:
-        '201': { description: Yüklendi }
+        '201':
+          description: Yüklendi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/File' }
         '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/PayloadTooLarge' }
 
   /api/files/{id}/download:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
       tags: [Files]
-      x-durum: planlandı
-      summary: Dosya indir (yalnızca proje üyeleri)
+      summary: Dosya indir — yalnız proje üyeleri ve Yönetici
+      description: |
+        Statik dizin yoktur; her indirme bu uç noktada yetki denetiminden geçer (FR-14.1). Üyelik her istekte yeniden
+        okunur, projeden çıkarılan kişi indiremez. Yanıt `Content-Disposition: attachment` (UTF-8 dosya adı),
+        `X-Content-Type-Options: nosniff` ve `Cache-Control: private, no-store` ile döner.
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Dosya içeriği }
+        '200':
+          description: Dosya içeriği
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
+  # ---------------------------------------------------------------------------
+  # Planlanan uç noktalar (sözleşme taslağı v0.5)
+  # ---------------------------------------------------------------------------
   /api/projects/{id}/reports/progress:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
@@ -720,6 +767,18 @@ components:
         author_id: { type: integer, nullable: true, description: Kullanıcı silindiyse null }
         content: { type: string }
         created_at: { type: string, format: date-time }
+    File:
+      type: object
+      description: Dosya meta verisi. Depolama anahtarı (storage_path) hiçbir yanıtta yer almaz.
+      properties:
+        id: { type: integer }
+        project_id: { type: integer }
+        task_id: { type: integer, nullable: true, description: 'Bağlı görev (Karar 11); görev silinirse null' }
+        name: { type: string, maxLength: 255, example: Gereksinim Belgesi.pdf }
+        type: { type: string, example: application/pdf, description: İçerikten belirlenen MIME türü }
+        size: { type: integer, description: Bayt, en fazla 10485760 }
+        uploader_id: { type: integer, nullable: true }
+        uploaded_at: { type: string, format: date-time }
     Error:
       type: object
       properties:
@@ -753,7 +812,7 @@ components:
       description: Çakışma (CONFLICT)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
     PayloadTooLarge:
-      description: İstek gövdesi 1 MB sınırını aşıyor (PAYLOAD_TOO_LARGE)
+      description: İstek gövdesi 1 MB (JSON) veya yüklenen dosya 10 MB sınırını aşıyor (PAYLOAD_TOO_LARGE)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
     TooManyRequests:
       description: Aynı IP'den 15 dakikada 5 başarısız giriş denemesi aşıldı (TOO_MANY_REQUESTS). `Retry-After` başlığı bekleme süresini verir.
