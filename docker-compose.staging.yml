@@ -1,0 +1,92 @@
+# =============================================================================
+# SEK TECH — Staging (Test / Ön Yayın) Ortamı — Sprint 5 (Issue #59)
+# Sorumlu: Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)
+#
+# Amaç:
+#   Yerel geliştirme ortamından izole, prodüksiyona eşdeğer test ve ön yayın
+#   ortamı. Port çakışmalarını önlemek için alternatif portlar kullanır:
+#   Frontend: http://localhost:3001
+#   API: http://localhost:5001/api/docs
+#   DB: localhost:5434
+#
+# Kullanım:
+#   docker compose -f docker-compose.staging.yml up --build -d
+#   docker compose -f docker-compose.staging.yml ps
+#   docker compose -f docker-compose.staging.yml down
+# =============================================================================
+
+version: '3.8'
+
+services:
+  staging-db:
+    image: postgres:15-alpine
+    container_name: sektech-staging-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: staging_admin
+      POSTGRES_PASSWORD: staging_password_2026!
+      POSTGRES_DB: sektech_staging
+    ports:
+      - "5434:5432"
+    volumes:
+      - staging_pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./database/migrations/002_gorev_turu.sql:/docker-entrypoint-initdb.d/01b-gorev-turu.sql:ro
+      - ./database/migrations/003_dosya_gorev_baglantisi.sql:/docker-entrypoint-initdb.d/01c-dosya-gorev.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    networks:
+      - staging-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U staging_admin -d sektech_staging"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  staging-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sektech-staging-server
+    restart: unless-stopped
+    ports:
+      - "5001:5000"
+    depends_on:
+      staging-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: staging
+      PORT: 5000
+      DATABASE_URL: postgresql://staging_admin:staging_password_2026!@staging-db:5432/sektech_staging
+      JWT_SECRET: staging-jwt-secret-key-sektech-2026-very-secure
+      TRUST_PROXY: "true"
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - staging_uploads:/app/uploads
+    networks:
+      - staging-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  staging-client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sektech-staging-client
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - staging-server
+    networks:
+      - staging-net
+
+networks:
+  staging-net:
+    driver: bridge
+
+volumes:
+  staging_pgdata:
+  staging_uploads:
