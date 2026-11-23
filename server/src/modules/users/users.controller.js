@@ -14,6 +14,8 @@ module.exports = {
 
   async getById(req, res) {
     const id = parseId(req.params.id, 'Geçersiz kullanıcı kimliği.');
+    // VT'ye gitmeden önce: başkasının kimliği var olsun olmasın 403, böylece kimlik varlığı da sızmaz (#110)
+    if (id !== req.user.id && req.user.permissions['user:manage'] !== true) throw AppError.forbidden();
     const user = await usersRepository.findById(id);
     if (!user) throw AppError.notFound('Kullanıcı bulunamadı.');
     res.json({ data: user });

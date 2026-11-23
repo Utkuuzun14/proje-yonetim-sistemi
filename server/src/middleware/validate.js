@@ -2,11 +2,11 @@
 const AppError = require('../utils/AppError');
 
 /**
- * Zod şemasıyla istek gövdesini doğrular; geçerliyse req.body'yi temizlenmiş veriyle değiştirir.
- * Hata ayrıntısı: [{ field, message }]
+ * Zod şemasıyla istek gövdesini (veya source = 'query' ile sorgu parametrelerini) doğrular;
+ * geçerliyse req[source]'u temizlenmiş veriyle değiştirir. Hata ayrıntısı: [{ field, message }]
  */
-module.exports = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.body ?? {});
+module.exports = (schema, source = 'body') => (req, res, next) => {
+  const result = schema.safeParse(req[source] ?? {});
   if (!result.success) {
     // Kök seviye hata (ör. gövde dizi veya metin): zod'un İngilizce varsayılan mesajı yerine Türkçe (#105)
     const details = result.error.issues.map((i) =>
@@ -16,6 +16,6 @@ module.exports = (schema) => (req, res, next) => {
     );
     return next(AppError.badRequest('Gönderilen veriler geçersiz.', details));
   }
-  req.body = result.data;
+  req[source] = result.data;
   return next();
 };
