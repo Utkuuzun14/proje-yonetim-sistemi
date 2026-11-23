@@ -6,6 +6,8 @@
 
 ---
 
+> 30 Ekim 2026: Oturum ve şema terimleri #96 kararlarına göre düzeltildi. H4-H5 güncel kabul kriterleri ve uygulama açıkları [#34 çıktısında](urun/34-backlog-ve-tasarim-kabul.md) bulunur. Aşağıdaki gelecek özellikler tamamlanmış ürün davranışı değildir.
+
 ## MODÜL 1: KULLANICI VE ROL YÖNETİMİ (RBAC)
 
 ### US-01: Güvenli Kullanıcı Kaydı ve Giriş
@@ -14,11 +16,11 @@
   Bir **ziyaretçi/yazılım geliştirici** olarak, sisteme e-posta ve güçlü bir parola ile kaydolup giriş yapabilmek istiyorum, böylece projelerime ve görevlerime güvenli bir ortamda erişebileyim.
 * **Kabul Kriterleri:**
   1. **Given:** Kullanıcı kayıt formundadır.  
-     **When:** Geçerli ad, soyad, benzersiz e-posta ve en az 8 karakterli (büyük, küçük harf, rakam ve özel karakter içeren) parola girip kaydolur.  
+     **When:** Tek name alanında geçerli ad soyad, benzersiz e-posta ve en az 8 karakterli (büyük, küçük harf, rakam ve özel karakter içeren) parola girip kaydolur.  
      **Then:** Hesap varsayılan `Member` rolüyle oluşturulur (HTTP 201) ve şifre bcrypt ile tuzlanarak veri tabanına işlenir.
   2. **Given:** Kayıtlı kullanıcı giriş formundadır.  
      **When:** Doğru e-posta ve parola kombinasyonunu gönderir.  
-     **Then:** Sunucu 1 saatlik `access_token` (JWT) ve 7 günlük `refresh_token` döner (HTTP 200); kullanıcı doğrudan ana dashboard'a yönlendirilir.
+     **Then:** Sunucu tek 8 saatlik JWT döner (HTTP 200; data.token ve data.user); refresh token yoktur. Kullanıcı proje listesine yönlendirilir.
   3. **Given:** Hatalı kimlik bilgisi girilmiştir.  
      **When:** Giriş isteği tetiklenir.  
      **Then:** Sistem kullanıcı adı veya şifre ayrımı yapmaksızın jenerik hata mesajı gösterir (HTTP 401).
@@ -76,7 +78,7 @@
 * **Kabul Kriterleri:**
   1. **Given:** Görev `To Do` durumundadır.  
      **When:** Kullanıcı görevi `In Progress` durumuna geçirir.  
-     **Then:** Tek bir veri tabanı transaction'ı içinde `tasks.status` güncellenir ve `task_status_logs` tablosuna `task_id`, `old_status`, `new_status`, `changed_by` ve UTC `changed_at` yazılır.
+     **Then:** Tek bir veri tabanı transaction'ı içinde `tasks.status` güncellenir ve `task_status_history` tablosuna `task_id`, `old_status`, `new_status`, `changed_by_id` ve UTC `changed_at` yazılır.
   2. **Given:** Görev durumu değişimi esnasında log tablosuna yazma hatası oluşmuştur.  
      **When:** İşlem tetiklenir.  
      **Then:** Transaction iptal edilir (Rollback), görev eski durumunda kalır ve hata istemciye bildirilir.
@@ -193,7 +195,7 @@
 ### US-13: Durum Geçmişi Tabanlı Sprint Burndown Trendi
 * **Öncelik:** `[MUST]` | **Tahmini Puan:** 5 SP
 * **Kullanıcı Hikâyesi:**  
-  Bir **Proje Yöneticisi ve Scrum Ekibi** olarak, `task_status_logs` verilerinden beslenen günlük sprint burndown grafiğini izlemek istiyorum, böylece sprint hedefine zamanında ulaşıp ulaşamayacağımızı teşhis edebilelim.
+  Bir **Proje Yöneticisi ve Scrum Ekibi** olarak, `task_status_history` verilerinden beslenen günlük sprint burndown grafiğini izlemek istiyorum, böylece sprint hedefine zamanında ulaşıp ulaşamayacağımızı teşhis edebilelim.
 * **Kabul Kriterleri:**
   1. **Given:** Sprint başlangıç ve bitiş tarihleri bellidir.  
      **When:** Burndown raporu çağrılır.  

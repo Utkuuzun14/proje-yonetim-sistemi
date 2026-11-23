@@ -2,6 +2,7 @@
 /**
  * Kart #44 — Kullanıcı yönetimi ve RBAC (Sprint 3 teslimatı: "Yönetici kullanıcı ekleyip rol atayabiliyor")
  * #104: Ekip Üyesi kullanıcı listesini göremez.
+ * #110: Ekip Üyesi başka kullanıcının detayını göremez, yalnızca kendini görür.
  */
 const request = require('supertest');
 const { createApp } = require('../../src/app');
@@ -38,6 +39,33 @@ describe('GET /api/users (#104)', () => {
     const res = await request(app).get('/api/users').set(auth(admin.token));
     expect(res.status).toBe(200);
     expect(res.body.data.map((u) => u.email)).toContain('utku@sektech.com');
+  });
+});
+
+describe('GET /api/users/:id (#110)', () => {
+  test('Ekip Üyesi başka bir kullanıcının detayını göremez → 403, veri dönmez', async () => {
+    const res = await request(app).get(`/api/users/${admin.user.id}`).set(auth(member.token));
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe('FORBIDDEN');
+    expect(res.body).not.toHaveProperty('data');
+  });
+
+  test('Ekip Üyesi için olmayan kimlik de 403 → kimliklerin varlığı sızmaz', async () => {
+    const res = await request(app).get('/api/users/2147483647').set(auth(member.token));
+    expect(res.status).toBe(403);
+  });
+
+  test('Ekip Üyesi kendi detayını görür → 200', async () => {
+    const res = await request(app).get(`/api/users/${member.user.id}`).set(auth(member.token));
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ id: member.user.id, email: 'utku@sektech.com' });
+    expect(res.body.data).not.toHaveProperty('password_hash');
+  });
+
+  test('Yönetici herhangi bir kullanıcının detayını görür → 200', async () => {
+    const res = await request(app).get(`/api/users/${member.user.id}`).set(auth(admin.token));
+    expect(res.status).toBe(200);
+    expect(res.body.data.email).toBe('utku@sektech.com');
   });
 });
 
