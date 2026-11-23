@@ -125,7 +125,15 @@ SRS v1.1 §4.1'e göre 50 kullanıcı / 200 ms hedefleri dönem sonrası kapasit
 [Test Stratejisi](test-stratejisi.md)'ndeki "rapor uç noktaları seed verisiyle < 1 sn" ve TS-RPR-05'tir.
 Ek olarak SRS'in istediği ölçüm koşulları kayda geçirilir.
 
-**Ölçüm koşulları:** donanım ⏳ · veri seti ⏳ (proje / görev / kullanıcı sayısı) · eşzamanlı istek ⏳ · tekrar ⏳ · araç ⏳ *(k6 veya zamanlama betiği)*
+Araç: `scripts/perf-smoke.mjs`. Geçici bir proje ve görev veri seti oluşturur, uç noktaları ölçer, sonra projeyi siler.
+Çıktısı bu bölüme yapıştırılacak Markdown tablosudur. Ölçüm koşullarını (donanım, veri seti, eşzamanlılık, tekrar) kendisi yazar.
+Giriş her zaman sıralı ölçülür (bkz. §6.2).
+
+**Ölçüm koşulları:** ⏳ *(betik çıktısı)*
+
+**Ön ölçüm (23 Kasım, yerel Docker Compose, i7-13700H):** 200 görev ve tek istemciyle tüm uç noktalarda p95 ≤ 66 ms
+(en yavaşı bcrypt nedeniyle giriş). 500 görev ve 10 eşzamanlı istemciyle p95 ≤ 84 ms. İstemci paketi gzip ile 114 KB.
+Rapor uç noktaları henüz yok (#65).
 
 | Uç nokta | Hedef | p50 | p95 | Maks | Sonuç |
 |---|---|---|---|---|---|
@@ -163,6 +171,7 @@ Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım 
 | #102 | `GET /api/users/:id` büyük sayıda 500 dönüyor | Orta | Kullanıcılar | Tur #1 | 29 Eki | 30 Eki | 1 gün | #108 | API |
 | #103 | 1 MB üstü gövde 413 yerine 500 dönüyor | Orta | Altyapı | Tur #1 | 29 Eki | 30 Eki | 1 gün | #108 | R-INF-04 |
 | #105 | Dizi gövdede doğrulama mesajı İngilizce | Düşük | Altyapı | Tur #1 | 29 Eki | 30 Eki | 1 gün | #108 | API |
+| ⏳ | Aynı IP'den eşzamanlı **başarılı** girişler giriş kilidini tetikliyor: 6+ eşzamanlı istekte 429, ardından doğru parola da 15 dk 429 | ⏳ | Kimlik doğrulama | Performans ölçümü | 23 Kas | | | | |
 | ⏳ | *RC haftası bulguları* | | | | | | | | |
 
 **Özet:** Ortalama kapanma süresi 1,2 gün. 5 hatanın 5'i için regresyon testi var. Yüksek önemdeki iki hata da
