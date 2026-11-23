@@ -60,7 +60,7 @@
 ## Dosya Listesi Bileşen Desteği ve Gözlemler
 * **İlgili Bileşenler:** `client/src/live/ProjectFiles.tsx` ve `client/src/live/fileApi.ts` (önizleme için `client/src/workspace/ProjectFiles.tsx`).
 * **Doğrulanan Kriterler:** Boş liste durum yönlendirmesi (*"Henüz dosya eklenmedi."* / *"Bu göreve bağlı dosya yok."*), dosya adı/boyutu (`KB`)/yüklenme tarihi/bağlı görev adı gösterimi, yükleniyor (`Dosyalar yükleniyor…`) ve hata durumunda `Listeyi yenile` akışı ile `storage_path` bilgisinin istemciye sızdırılmaması canlı sistemde doğrulandı.
-* **Küçük Gözlem (Not):** Backend API'de `DELETE /api/files/:id` uç noktası hazır ve birim/API testleriyle doğrulanmış durumda; canlı arayüzde (`live/ProjectFiles.tsx`) yanlışlıkla veri kaybını önlemek adına yalnızca yükleme, görev filtreleme ve güvenli blob indirme işlemleri sunulmaktadır (kritik engel değildir).
+* **Küçük Gözlem (Not):** Kodda henüz dosya silme uç noktası (`DELETE /api/files/:id`) bulunmamaktadır, kapsam dışı / sonraki aşama olarak değerlendirilebilir; canlı arayüzde (`live/ProjectFiles.tsx`) yükleme, görev filtreleme ve güvenli blob indirme işlemleri eksiksiz çalışmaktadır.
 
 ---
 
