@@ -150,7 +150,7 @@ Rapor uç noktaları henüz yok (#65).
 
 ## 6. Hata istatistikleri
 
-Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım tarihi: 23 Kasım 2026 · RC sayımı ⏳
+Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım tarihi: 24 Kasım 2026 · RC sayımı ⏳
 
 ### 6.1 Önem ve duruma göre
 
@@ -158,9 +158,9 @@ Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım 
 |---|---|---|---|
 | Kritik | 0 | 0 | 0 |
 | Yüksek | 2 | 2 | 0 |
-| Orta | 2 | 2 | 0 |
+| Orta | 3 | 2 | 1 (#146) |
 | Düşük | 1 | 1 | 0 |
-| **Toplam** | **5** | **5** | **0** |
+| **Toplam** | **6** | **5** | **1** |
 
 ### 6.2 Hata listesi
 
