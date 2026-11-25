@@ -12,7 +12,8 @@
 | İlgili | [Test Planı](test-plani.md) · [Test Stratejisi](test-stratejisi.md) · [Regresyon Listesi](regresyon-listesi.md) · [Kapsam Raporu](kapsam-raporu.md) · [Test Turu #1](test-turlari/tur-01.md) |
 
 > **Durum: İSKELET.** Bu belge RC haftası boyunca doldurulur. `⏳` ile işaretli hücreler RC ölçümünü bekler.
-> v0.5 sütunları 22 Kasım ölçümüdür ve karşılaştırma için tutulur.
+> v0.5 sütunları 22 Kasım ölçümüdür ve karşılaştırma için tutulur. "RC öncesi" sütunları 25 Kasım'da develop `cfb6e0c` üzerinde
+> koşulan tam otomatik regresyondur (rapor modülü hariç). RC'de yalnız rapor modülü eklenip kısa tekrar koşulacak.
 
 ## 1. Özet ve RC kararı
 
@@ -35,7 +36,7 @@
 | Ortam | Sürüm | Ne koşuldu |
 |---|---|---|
 | CI (GitHub Actions) | ⏳ RC commit | Birim, API, istemci bileşen, Docker Compose smoke, E2E |
-| Yerel | ⏳ | Kapsam ölçümü, performans ölçümü |
+| Yerel (Docker Compose, Windows 11) | develop `cfb6e0c` (25 Kasım, RC öncesi) · RC ⏳ | Tüm otomatik katmanlar, kapsam, performans |
 | Staging (`docker-compose.staging.yml`) | ⏳ | Manuel regresyon (§7 maddeleri), UAT |
 | Yayın (production) | ⏳ | Smoke |
 
@@ -45,23 +46,23 @@
 
 ### 3.1 Koşulan / geçen / başarısız
 
-| Katman | Araç | v0.5 (22 Kasım) | RC: koşulan | Geçen | Başarısız | Atlanan / todo |
-|---|---|---|---|---|---|---|
-| Sunucu birim + API | Jest + Supertest | 215 geçti, 7 todo | ⏳ | ⏳ | ⏳ | ⏳ |
-| ↳ Rapor doğruluğu (`reports.api.test.js`, #144) | Jest + Supertest | — (yazıldı, #65 bekliyor) | ⏳ | ⏳ | ⏳ | ⏳ |
-| İstemci bileşen | Vitest + Testing Library | 92 geçti | ⏳ | ⏳ | ⏳ | ⏳ |
-| Docker Compose smoke | `scripts/compose-smoke.mjs` | geçti | ⏳ | ⏳ | ⏳ | — |
-| E2E | Playwright (Chromium) | 20 geçti, 6 dosya | ⏳ | ⏳ | ⏳ | ⏳ |
-| **Toplam** | | **327 + smoke** | ⏳ | ⏳ | ⏳ | ⏳ |
+| Katman | Araç | v0.5 (22 Kasım) | RC öncesi (25 Kasım) | RC: koşulan | Geçen | Başarısız | Atlanan / todo |
+|---|---|---|---|---|---|---|---|
+| Sunucu birim + API | Jest + Supertest | 215 geçti, 7 todo | 215/215 geçti, 7 todo (14 dosya) | ⏳ | ⏳ | ⏳ | ⏳ |
+| ↳ Rapor doğruluğu (`reports.api.test.js`, #144) | Jest + Supertest | — (yazıldı, #65 bekliyor) | — (#65 yok) | ⏳ | ⏳ | ⏳ | ⏳ |
+| İstemci bileşen | Vitest + Testing Library | 92 geçti | 92/92 geçti (10 dosya) | ⏳ | ⏳ | ⏳ | ⏳ |
+| Docker Compose smoke | `scripts/compose-smoke.mjs` | geçti | 2/2 adım geçti | ⏳ | ⏳ | ⏳ | — |
+| E2E | Playwright (Chromium) | 20 geçti, 6 dosya | 18/20 → düzeltmeyle 20/20 (#147, §3.3) | ⏳ | ⏳ | ⏳ | ⏳ |
+| **Toplam** | | **327 + smoke** | **327/327 + smoke** (2 test düzeltmesiyle) | ⏳ | ⏳ | ⏳ | ⏳ |
 
-CI çalışması: ⏳ *bağlantı* · Artefaktlar: `coverage-server`, `playwright-report`
+CI çalışması (RC): ⏳ *bağlantı* · Artefaktlar: `coverage-server`, `playwright-report`
 
 ### 3.2 Kapsam
 
-| Katman | v0.5 satır | RC satır | RC dal | Hedef |
-|---|---|---|---|---|
-| Sunucu (`server/src`) | %97,7 | ⏳ | ⏳ | ≥ %90 |
-| İstemci (`client/src`) | %86,6 | ⏳ | ⏳ | — (izleniyor) |
+| Katman | v0.5 satır | RC öncesi satır / dal | RC satır | RC dal | Hedef |
+|---|---|---|---|---|---|
+| Sunucu (`server/src`) | %97,7 | %97,7 / %87,6 | ⏳ | ⏳ | ≥ %90 |
+| İstemci (`client/src`) | %86,6 | %86,7 / %81,6 | ⏳ | ⏳ | — (izleniyor) |
 
 Ayrıntı: [Kapsam Raporu](kapsam-raporu.md).
 
@@ -70,6 +71,7 @@ Ayrıntı: [Kapsam Raporu](kapsam-raporu.md).
 | Test | Belirti | Kök neden | Çözüm |
 |---|---|---|---|
 | Giriş rate-limit (R-AUTH-07) | Yavaş makinede ara sıra 429 yerine 401 | Test, sabit zaman penceresine sığmıyordu; uygulama hatası değil | Pencere genişletildi (#139) |
+| Kanban sürükle-bırak (TS-KNB-01/02) | Yerelde (Windows) her seferinde zaman aşımı, PATCH gitmiyor. CI'da (Linux) geçiyor | `dragTo` sütunun ortasına bırakıyor. Windows yazı tiplerinde sütun 720 px görünümden uzun, orta nokta ekran dışında kalıyor. Uygulama hatası değil (1400 px görünümde değişikliksiz geçti) | Sütunun üst kısmına bırakılıyor (#147). 3 tekrarda 6/6, tüm E2E 20/20 |
 | ⏳ | | | |
 
 ## 4. Regresyon sonuçları
@@ -78,14 +80,14 @@ Liste: [Regresyon Listesi](regresyon-listesi.md). Sonuç: ✅ geçti · ❌ kald
 
 | Alan | Senaryo sayısı | Otomatik | Manuel | ✅ | ❌ | ⏸ | Not |
 |---|---|---|---|---|---|---|---|
-| 1. Altyapı ve kurulum | 4 | 4 | 0 | ⏳ | ⏳ | ⏳ | |
-| 2. Kimlik doğrulama | 7 | 7 | 0 | ⏳ | ⏳ | ⏳ | |
-| 3. Roller ve yetki | 6 | 6 | 0 | ⏳ | ⏳ | ⏳ | |
-| 4. Projeler ve üyelik | 4 | 4 | 0 | ⏳ | ⏳ | ⏳ | |
-| 5. Görevler, Kanban, yorumlar | 12 | 12 | 0 | ⏳ | ⏳ | ⏳ | R-YRM-03 E2E + manuel |
-| 6a. Takvim / Gantt | TS-TKV-01…03, TS-GNT-01 | ✅ | — | ⏳ | ⏳ | ⏳ | |
-| 6b. Dosyalar | TS-DSY-01…04 | ✅ | — | ⏳ | ⏳ | ⏳ | |
-| 6c. Raporlar | R-01…R-07 | API ✅ (#144), E2E ⏳ (#64) | ⏳ | ⏳ | ⏳ | ⏳ | #143 kabul planı |
+| 1. Altyapı ve kurulum | 4 | 4 | 0 | 4 | 0 | 0 | RC öncesi |
+| 2. Kimlik doğrulama | 7 | 7 | 0 | 7 | 0 | 0 | RC öncesi · eşzamanlı giriş bulgusu #146 listede yoktu, R-AUTH-08 olarak eklenecek |
+| 3. Roller ve yetki | 6 | 6 | 0 | 6 | 0 | 0 | RC öncesi |
+| 4. Projeler ve üyelik | 4 | 4 | 0 | 4 | 0 | 0 | RC öncesi |
+| 5. Görevler, Kanban, yorumlar | 12 | 12 | 0 | 12 | 0 | 0 | RC öncesi · R-KNB-01/02 #147 ile · R-YRM-03 manuel kısmı ⏳ |
+| 6a. Takvim / Gantt | TS-TKV-01…03, TS-GNT-01 | ✅ | — | 4 | 0 | 0 | RC öncesi |
+| 6b. Dosyalar | TS-DSY-01…04 | ✅ | — | 4 | 0 | 0 | RC öncesi |
+| 6c. Raporlar | R-01…R-07 | API ✅ (#144), E2E ⏳ (#64) | ⏳ | — | — | 7 | #65 bekleniyor · #143 kabul planı |
 | 7. Manuel kontroller | 4 | — | 4 | ⏳ | ⏳ | ⏳ | §4.1 |
 
 ### 4.1 Manuel kontroller
@@ -111,13 +113,13 @@ Liste: [Regresyon Listesi](regresyon-listesi.md). Sonuç: ✅ geçti · ❌ kald
 
 | # | Kontrol | Yerel / CI | Staging | Yayın |
 |---|---|---|---|---|
-| S-01 | `docker compose up --build` sonrası VT, API, arayüz sağlıklı | ⏳ | ⏳ | ⏳ |
-| S-02 | `/api/health` 200, VT bağlantısı var | ⏳ | ⏳ | ⏳ |
-| S-03 | Yönetici girişi → proje listesi | ⏳ | ⏳ | ⏳ |
-| S-04 | Görev oluştur → Kanban'da taşı → yenile, kalıcı | ⏳ | ⏳ | ⏳ |
-| S-05 | Dosya yükle → indir | ⏳ | ⏳ | ⏳ |
-| S-06 | Rapor ekranı açılır, sayılar seed ile tutarlı | ⏳ | ⏳ | ⏳ |
-| S-07 | Swagger `/api/docs` açılır | ⏳ | ⏳ | ⏳ |
+| S-01 | `docker compose up --build` sonrası VT, API, arayüz sağlıklı | ✅ | ⏳ | ⏳ |
+| S-02 | `/api/health` 200, VT bağlantısı var | ✅ | ⏳ | ⏳ |
+| S-03 | Yönetici girişi → proje listesi | ✅ | ⏳ | ⏳ |
+| S-04 | Görev oluştur → Kanban'da taşı → yenile, kalıcı | ✅ (E2E) | ⏳ | ⏳ |
+| S-05 | Dosya yükle → indir | ✅ (E2E) | ⏳ | ⏳ |
+| S-06 | Rapor ekranı açılır, sayılar seed ile tutarlı | ⏸ #64 | ⏳ | ⏳ |
+| S-07 | Swagger `/api/docs` açılır | ✅ | ⏳ | ⏳ |
 
 ### 5.2 Temel performans
 
@@ -129,24 +131,34 @@ Araç: `scripts/perf-smoke.mjs`. Geçici bir proje ve görev veri seti oluşturu
 Çıktısı bu bölüme yapıştırılacak Markdown tablosudur. Ölçüm koşullarını (donanım, veri seti, eşzamanlılık, tekrar) kendisi yazar.
 Giriş her zaman sıralı ölçülür (bkz. §6.2, #146).
 
-**Ölçüm koşulları:** ⏳ *(betik çıktısı)*
+#### RC öncesi ölçüm (25 Kasım, develop `cfb6e0c`, yerel Docker Compose)
 
-**Ön ölçüm (23 Kasım, yerel Docker Compose, i7-13700H):** 200 görev ve tek istemciyle tüm uç noktalarda p95 ≤ 66 ms
-(en yavaşı bcrypt nedeniyle giriş). 500 görev ve 10 eşzamanlı istemciyle p95 ≤ 84 ms. İstemci paketi gzip ile 114 KB.
-Rapor uç noktaları henüz yok (#65).
+**Ölçüm koşulları:** 2026-11-25 15:41 UTC · http://localhost:5000 · Windows_NT 10.0.26200 · 20 × 13th Gen Intel(R) Core(TM) i7-13700H · 15.6 GB RAM · Node v24.21.0
+· veri seti: 200 görevli geçici proje + seed verisi · 50 ölçüm/uç nokta, 5 ısınma · eşzamanlı istemci: 1 · araç: `scripts/perf-smoke.mjs`
 
-| Uç nokta | Hedef | p50 | p95 | Maks | Sonuç |
-|---|---|---|---|---|---|
-| `POST /api/auth/login` | < 1 sn | ⏳ | ⏳ | ⏳ | ⏳ |
-| `GET /api/projects` | < 1 sn | ⏳ | ⏳ | ⏳ | ⏳ |
-| `GET /api/projects/:id/tasks` (filtreli) | < 1 sn | ⏳ | ⏳ | ⏳ | ⏳ |
-| `PATCH /api/tasks/:id` (durum) | < 1 sn | ⏳ | ⏳ | ⏳ | ⏳ |
-| `GET /api/projects/:id/reports/progress` | < 1 sn (TS-RPR-05) | ⏳ | ⏳ | ⏳ | ⏳ |
-| `GET /api/projects/:id/reports/range` | < 1 sn (TS-RPR-05) | ⏳ | ⏳ | ⏳ | ⏳ |
+| Uç nokta | Hedef | p50 (ms) | p95 (ms) | Maks (ms) | İstek/sn | Sonuç |
+|---|---|---|---|---|---|---|
+| `POST /api/auth/login (sıralı)` | < 1 sn | 118 | 134.4 | 146.9 | 8.4 | ✅ |
+| `GET /api/auth/me` | < 1 sn | 7 | 9.7 | 14.4 | 135.5 | ✅ |
+| `GET /api/projects` | < 1 sn | 7.5 | 9.3 | 9.7 | 131.3 | ✅ |
+| `GET /api/projects/:id` | < 1 sn | 8.8 | 10.9 | 15.2 | 110.1 | ✅ |
+| `GET /api/projects/:id/tasks (200 görev)` | < 1 sn | 11.2 | 17.1 | 19 | 80.9 | ✅ |
+| `GET /api/projects/:id/tasks (durum + kişi + tarih filtresi)` | < 1 sn (FR-09) | 5.6 | 9.2 | 11.1 | 164.6 | ✅ |
+| `PATCH /api/tasks/:id (durum)` | < 1 sn | 10.2 | 12.6 | 13 | 99.8 | ✅ |
+| `GET /api/tasks/:id/history` | < 1 sn | 4.3 | 8 | 14.3 | 204.5 | ✅ |
 
 | İstemci | Hedef | Ölçülen |
 |---|---|---|
-| Üretim paketi (gzip) | ≤ 2 MB (SRS §4.1) | ⏳ |
+| Üretim paketi (4 dosya, gzip) | ≤ 2 MB (SRS §4.1) | 114.1 KB (ham 373.8 KB) ✅ |
+
+- GET /api/projects/:id/reports/progress: uç nokta yok (404), ölçülmedi — #65 birleşince tekrar koşulacak.
+- GET /api/projects/:id/reports/range: uç nokta yok (404), ölçülmedi — #65 birleşince tekrar koşulacak.
+
+Ek ölçüm (23 Kasım): 500 görev ve 10 eşzamanlı istemciyle girişler hariç tüm uç noktalarda p95 ≤ 84 ms.
+
+#### RC ölçümü
+
+⏳ *staging'de, rapor uç noktaları dahil, betik çıktısı buraya*
 
 ## 6. Hata istatistikleri
 
