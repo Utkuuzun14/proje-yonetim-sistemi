@@ -94,10 +94,17 @@ Liste: [Regresyon Listesi](regresyon-listesi.md). Sonuç: ✅ geçti · ❌ kald
 
 | ID | Kontrol | Chrome | Firefox | Not |
 |---|---|---|---|---|
-| R-M-01 | Görsel tutarlılık, responsive (1366, 1920, tablet 768) | ⏳ | ⏳ | |
-| R-M-02 | Klavye ile gezinme, odak görünürlüğü, renk kontrastı | ⏳ | ⏳ | |
-| R-M-03 | Boş / yükleniyor / hata durumları (her ekran) | ⏳ | ⏳ | |
+| R-M-01 | Görsel tutarlılık, responsive (1366, 1920, tablet 768) | ✅ | ⏳ | 6 ekran × 3 genişlik, hiçbirinde yatay kaydırma yok. Tablette takvim ızgarası etiketli, kaydırılabilir bölge içinde yatay kayıyor (tasarım gereği). Dosyalar başlığı proje adı yerine "Proje #1 dosyaları" (bulgu M-2) |
+| R-M-02 | Klavye ile gezinme, odak görünürlüğü, renk kontrastı | ⚠️ | ⏳ | Giriş ve Kanban'da sekme sırası mantıklı, her öğede odak halkası var. "İçeriğe geç" bağlantısı ana içeriğe odaklıyor. Klavyeyle giriş ve durum değiştirme çalışıyor. Form alanlarının hepsi etiketli. **Kontrast:** kenar çubuğundaki kullanıcı adı ve rol 2,77:1 (AA için 4,5:1 gerekir), tüm ekranlarda (bulgu M-1). Diğer metinlerin hepsi AA'yı geçiyor |
+| R-M-03 | Boş / yükleniyor / hata durumları (her ekran) | ✅ | ⏳ | **Boş:** görev, takvim ve dosyada açıklayıcı mesaj var. **Yükleniyor:** 6 ekranda da `aria-live` ile duyuruluyor. **Hata:** API kapalıyken 7–9 sn sonra hata mesajı ve "Tekrar dene" / "Listeyi yenile" çıkıyor, API açılınca düğme veriyi geri getiriyor. Mesajlar ekranlar arasında farklı ("Sunucu zamanında yanıt vermedi" / "İşlem tamamlanamadı"), işlevi etkilemiyor |
 | R-M-04 | Sunum senaryosu baştan sona | ⏳ | — | |
+
+Chrome sütunu: 25 Kasım, yerel Docker Compose, Claude masaüstü uygulamasının tarayıcısı (Chromium). Kontrast WCAG 2.1 formülüyle, sayfadaki hesaplanmış renklerden ölçüldü. Firefox ve R-M-04 elle koşulacak.
+
+| Bulgu | Önem (öneri) | Açıklama | Kayıt |
+|---|---|---|---|
+| M-1 | Düşük | Kenar çubuğunda kullanıcı adı ve rol metni `rgb(92,110,102)`, arka plan `rgb(16,43,41)`: kontrast 2,77:1 (WCAG AA 4,5:1) | ⏳ |
+| M-2 | Düşük | Dosyalar ekranının başlığı proje adı yerine kimlik gösteriyor ("Proje #1 dosyaları"). Görevler ve Takvim ekranları proje adını gösteriyor | ⏳ |
 
 ### 4.2 Kullanıcı kabul testleri (Abdulkahhar)
 
