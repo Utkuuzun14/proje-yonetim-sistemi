@@ -103,8 +103,8 @@ Chrome sütunu: 25 Kasım, yerel Docker Compose, Claude masaüstü uygulamasın�
 
 | Bulgu | Önem (öneri) | Açıklama | Kayıt |
 |---|---|---|---|
-| M-1 | Düşük | Kenar çubuğunda kullanıcı adı ve rol metni `rgb(92,110,102)`, arka plan `rgb(16,43,41)`: kontrast 2,77:1 (WCAG AA 4,5:1) | ⏳ |
-| M-2 | Düşük | Dosyalar ekranının başlığı proje adı yerine kimlik gösteriyor ("Proje #1 dosyaları"). Görevler ve Takvim ekranları proje adını gösteriyor | ⏳ |
+| M-1 | Düşük | Kenar çubuğunda kullanıcı adı ve rol metni `rgb(92,110,102)`, arka plan `rgb(16,43,41)`: kontrast 2,77:1 (WCAG AA 4,5:1) | #148 |
+| M-2 | Düşük | Dosyalar ekranının başlığı proje adı yerine kimlik gösteriyor ("Proje #1 dosyaları"). Görevler ve Takvim ekranları proje adını gösteriyor | #149 |
 
 ### 4.2 Kullanıcı kabul testleri (Abdulkahhar)
 
@@ -169,7 +169,7 @@ Ek ölçüm (23 Kasım): 500 görev ve 10 eşzamanlı istemciyle girişler hari�
 
 ## 6. Hata istatistikleri
 
-Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım tarihi: 24 Kasım 2026 · RC sayımı ⏳
+Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım tarihi: 25 Kasım 2026 · RC sayımı ⏳
 
 ### 6.1 Önem ve duruma göre
 
@@ -178,8 +178,8 @@ Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım 
 | Kritik | 0 | 0 | 0 |
 | Yüksek | 2 | 2 | 0 |
 | Orta | 3 | 2 | 1 (#146) |
-| Düşük | 1 | 1 | 0 |
-| **Toplam** | **6** | **5** | **1** |
+| Düşük | 3 | 1 | 2 (#148, #149) |
+| **Toplam** | **8** | **5** | **3** |
 
 ### 6.2 Hata listesi
 
@@ -191,6 +191,8 @@ Kaynak: GitHub Issues, `bug` etiketi ([Test Planı §7](test-plani.md)). Sayım 
 | #103 | 1 MB üstü gövde 413 yerine 500 dönüyor | Orta | Altyapı | Tur #1 | 29 Eki | 30 Eki | 1 gün | #108 | R-INF-04 |
 | #105 | Dizi gövdede doğrulama mesajı İngilizce | Düşük | Altyapı | Tur #1 | 29 Eki | 30 Eki | 1 gün | #108 | API |
 | #146 | Aynı IP'den eşzamanlı **başarılı** girişler giriş kilidini tetikliyor: 5'ten fazla eşzamanlı istekte 429, ardından doğru parola da 15 dk 429 | Orta | Kimlik doğrulama | Performans ölçümü | 23 Kas | | | | |
+| #148 | Kenar çubuğunda kullanıcı adı ve rol kontrastı 2,77:1 (WCAG AA 4,5:1) | Düşük | Arayüz | Manuel kontrol (R-M-02) | 25 Kas | | | | |
+| #149 | Dosyalar ekranı başlığı proje adı yerine kimlik gösteriyor | Düşük | Arayüz | Manuel kontrol (R-M-01) | 25 Kas | | | | |
 | ⏳ | *RC haftası bulguları* | | | | | | | | |
 
 **Özet:** Ortalama kapanma süresi 1,2 gün. 5 hatanın 5'i için regresyon testi var. Yüksek önemdeki iki hata da
