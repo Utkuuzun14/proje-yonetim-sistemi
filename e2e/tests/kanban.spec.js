@@ -8,6 +8,9 @@ const BOARD_URL = `/uygulama/projeler/${PROJECT_ID}/gorevler`;
 
 const column = (page, name) => page.getByRole('region', { name, exact: true });
 const cardIn = (page, name, title) => column(page, name).getByRole('button', { name: title, exact: true });
+// Sütunun üst kısmına bırak: varsayılan hedef sütunun ortası, sütun ekrandan uzunsa (ör. Windows yazı tipleriyle)
+// görünür alanın dışında kalıyor ve bırakma gerçekleşmiyor. Kullanıcı da sütunun görünen kısmına bırakır.
+const DROP = { targetPosition: { x: 40, y: 40 } };
 
 async function apiLogin(request, email) {
   const res = await request.post('/api/auth/login', { data: { email, password: SEED.password } });
@@ -42,7 +45,7 @@ test.describe('Kanban (Sprint 4)', () => {
     await expect(cardIn(page, 'To Do', task.title)).toBeVisible();
 
     const saved = page.waitForResponse((r) => r.url().endsWith(`/api/tasks/${task.id}`) && r.request().method() === 'PATCH');
-    await page.getByTestId(`task-${task.id}`).dragTo(column(page, 'In Progress'));
+    await page.getByTestId(`task-${task.id}`).dragTo(column(page, 'In Progress'), DROP);
     expect((await saved).status()).toBe(200);
     await expect(cardIn(page, 'In Progress', task.title)).toBeVisible();
 
@@ -79,7 +82,7 @@ test.describe('Kanban (Sprint 4)', () => {
     await page.goto(BOARD_URL);
     await expect(cardIn(page, 'To Do', task.title)).toBeVisible();
 
-    await page.getByTestId(`task-${task.id}`).dragTo(column(page, 'In Progress'));
+    await page.getByTestId(`task-${task.id}`).dragTo(column(page, 'In Progress'), DROP);
 
     await expect(page.locator('main').getByRole('alert')).toBeVisible();
     await expect(cardIn(page, 'To Do', task.title)).toBeEnabled();
