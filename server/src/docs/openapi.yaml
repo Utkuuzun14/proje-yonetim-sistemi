@@ -3,12 +3,12 @@ info:
   title: SEK TECH Proje Yönetim Sistemi API
   version: 0.5.0
   description: |
-    API sözleşmesi **v0.5** (kart #30), kimlik doğrulama API'si (kart #37), RBAC ve proje API'si (kart #44), görev ve yorum API'si (kart #51), dosya API'si (kart #58).
+    API sözleşmesi **v0.5** (kart #30), kimlik doğrulama API'si (kart #37), RBAC ve proje API'si (kart #44), görev ve yorum API'si (kart #51), dosya API'si (kart #58), rapor API'si (kart #65).
 
     - Tüm yanıtlar JSON. Başarılı yanıt `{ "data": ... }`, hata yanıtı `{ "error": { "code", "message", "details?" } }`.
     - Kimlik doğrulama: `POST /api/auth/login` ile alınan token `Authorization: Bearer <token>` başlığında gönderilir.
     - Yetki (RBAC, #44): rol izinleri `roles.permissions` alanından her istekte okunur; yetkisiz işlem → 403 `FORBIDDEN`.
-    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`, `Projects`, `Tasks`, `Comments`, `Files`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
+    - **Uygulanan** uç noktalar: `Health`, `Auth`, `Users`, `Projects`, `Tasks`, `Comments`, `Files`, `Reports`. Diğer etiketlerdeki uç noktalar sözleşme taslağıdır
       (`x-durum: planlandı`), ilgili sprint'te uygulanacak ve Sprint 2 sonunda (Hakan, #33) dondurulacaktır.
     - Seed kullanıcıları: `hakan@sektech.com` (Yönetici), `utku@sektech.com` (Ekip Üyesi) … parola `Password123!`.
 servers:
@@ -29,7 +29,7 @@ tags:
   - name: Files
     description: Dosya yükleme ve indirme (M4) — uygulandı (#58)
   - name: Reports
-    description: Raporlama (M5) — planlandı, Sprint 6 (#65)
+    description: Raporlama (M5) — uygulandı (#65)
 
 paths:
   /api/health:
@@ -584,30 +584,61 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
-  # ---------------------------------------------------------------------------
-  # Planlanan uç noktalar (sözleşme taslağı v0.5)
-  # ---------------------------------------------------------------------------
   /api/projects/{id}/reports/progress:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
       tags: [Reports]
-      x-durum: planlandı
       summary: Proje ilerleme yüzdesi ve kişi bazlı tamamlama
+      description: |
+        14 Kasım kapsam kararındaki 1. ve 2. rapor. Her istekte VT'den hesaplanır; görev değişince anında güncellenir.
+        - `completion_rate` = Done / toplam × 100, bir ondalık; görev yoksa `0` (NaN/null dönmez).
+        - Geciken: `end_date` bugünden önce ve durum Done değil. Bitiş tarihi olmayan görev gecikmez.
+        - `members`: projenin üyeleri (görevi olmasa da) ve projede görevi olup artık üye olmayanlar, ad sırasıyla.
+          Atanmamış görevler kişi satırına girmez, `unassigned` alanında sayılır
+          (Σ `members[].assigned` + `unassigned` = `total`).
+        - Görünürlük görevlerle aynı: Yönetici tüm projeleri, Ekip Üyesi yalnız üyesi olduklarını görür; üye olmayana 404.
       security: [{ bearerAuth: [] }]
       responses:
-        '200': { description: Rapor }
+        '200':
+          description: İlerleme raporu
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/ProgressReport' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
-  /api/projects/{id}/reports/periodic:
+  /api/projects/{id}/reports/range:
     parameters: [{ $ref: '#/components/parameters/Id' }]
     get:
       tags: [Reports]
-      x-durum: planlandı
-      summary: Günlük / haftalık / aylık ilerleme raporu
+      summary: Tarih aralıklı ilerleme (oluşturulan / tamamlanan görev sayısı)
+      description: |
+        14 Kasım kapsam kararındaki 3. rapor (günlük/haftalık/aylık ayrı raporların yerine). Aralık iki ucu dahil,
+        gün bazındadır; en kısa aralık tek gündür (`from` = `to`).
+        - `created`: `created_at` günü aralıkta olan görevler.
+        - `completed`: aralıkta Done'a geçişi (durum geçmişi) olan farklı görevler. Bir görev aralıkta Done olup
+          sonra geri alınsa da o aralıkta tamamlanan sayılır (olay bazlı; aynı görev birden fazla kez sayılmaz).
+        - `to` < `from`, eksik parametre, YYYY-AA-GG dışı biçim veya takvimde olmayan gün → 400.
       security: [{ bearerAuth: [] }]
       parameters:
-        - { name: period, in: query, required: true, schema: { type: string, enum: [daily, weekly, monthly] } }
+        - { name: from, in: query, required: true, schema: { type: string, format: date, example: '2026-11-01' } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date, example: '2026-11-15' } }
       responses:
-        '200': { description: Rapor }
+        '200':
+          description: Tarih aralıklı rapor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/RangeReport' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
 
 components:
   securitySchemes:
@@ -795,6 +826,39 @@ components:
                 properties:
                   field: { type: string, example: email }
                   message: { type: string, example: Geçerli bir e-posta adresi girin. }
+    ProgressReport:
+      type: object
+      properties:
+        total: { type: integer, example: 10 }
+        status_counts:
+          type: object
+          properties:
+            To Do: { type: integer, example: 3 }
+            In Progress: { type: integer, example: 3 }
+            Done: { type: integer, example: 4 }
+        overdue: { type: integer, example: 3 }
+        completion_rate: { type: number, description: 'Yüzde, bir ondalık; görev yoksa 0', example: 40 }
+        unassigned: { type: integer, example: 0 }
+        members:
+          type: array
+          items:
+            type: object
+            properties:
+              user_id: { type: integer, example: 2 }
+              name: { type: string, example: Utku Uzun }
+              assigned: { type: integer, example: 5 }
+              todo: { type: integer, example: 1 }
+              in_progress: { type: integer, example: 2 }
+              done: { type: integer, example: 2 }
+              overdue: { type: integer, example: 2 }
+              completion_rate: { type: number, example: 40 }
+    RangeReport:
+      type: object
+      properties:
+        from: { type: string, format: date, example: '2026-11-01' }
+        to: { type: string, format: date, example: '2026-11-15' }
+        created: { type: integer, example: 5 }
+        completed: { type: integer, example: 2 }
   responses:
     ValidationError:
       description: Doğrulama hatası (VALIDATION_ERROR / INVALID_JSON)

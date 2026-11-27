@@ -96,8 +96,8 @@ alanlarının altına yazılır.
 | GET/POST | `/api/tasks/:id/comments` | Yorumlar, kronolojik / ekle (yazar sunucuda belirlenir) | ✅ #51 |
 | GET/POST | `/api/projects/:id/files` | Dosyalar (`?taskId=`) / yükle (multipart `file`, isteğe bağlı `task_id`; en fazla 10 MB) | ✅ #58 |
 | GET | `/api/files/:id/download` | İndir (yalnız proje üyeleri ve Yönetici, `attachment`) | ✅ #58 |
-| GET | `/api/projects/:id/reports/progress` | İlerleme % ve kişi bazlı | 📝 #65 |
-| GET | `/api/projects/:id/reports/periodic?period=` | Günlük/haftalık/aylık | 📝 #65 |
+| GET | `/api/projects/:id/reports/progress` | İlerleme %, durum dağılımı, geciken, kişi bazlı tamamlama (proje üyeleri ve Yönetici) | ✅ #65 |
+| GET | `/api/projects/:id/reports/range?from=&to=` | Tarih aralıklı ilerleme: oluşturulan / tamamlanan görev (iki uç dahil, YYYY-AA-GG; 14 Kasım kararıyla `periodic` yerine) | ✅ #65 |
 
 İstek/yanıt örnekleri ve şemalar için Swagger UI'a bakın.
 
