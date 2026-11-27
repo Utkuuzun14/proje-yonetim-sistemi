@@ -66,15 +66,15 @@
 | R-KNB-02 | Sunucu hatasında kart eski sütuna döner | E2E | O | ✅ CI (#128) | TS-KNB-02 |
 | R-YRM-01 | Yorum ekleme; yazar sunucuda belirlenir; kronolojik | API | Y | ✅ CI (#131) | TS-YRM-01 |
 | R-YRM-02 | Boş yorum 400; üye olmayan yorum yazamaz/okuyamaz | API | Y | ✅ CI (#131) | TS-YRM-02 |
-| R-YRM-03 | Script içeren açıklama/yorum arayüzde çalışmaz | E2E + M | Y | ⏳ #50 | TS-GRV-09 |
+| R-YRM-03 | Script içeren açıklama/yorum arayüzde çalışmaz | E2E + M | Y | ✅ CI (#140) | TS-GRV-09 |
 
 ## 6. Sonraki sprintler (yer tutucu)
 
 | Alan | Sprint | Senaryolar | Kart |
 |---|---|---|---|
-| Takvim / Gantt | 5 | TS-TKV-01…03, TS-GNT-01 — bileşen testleri ✅ CI (`Timeline.test.tsx`, #129); E2E #67 | #57, #58 |
-| Dosyalar | 5 | TS-DSY-01…04 (tür, boyut, bayt imzası, yetkisiz indirme) — API ✅ CI (`files.api.test.js`, #132); E2E #67 | #58, #59, #60 |
-| Raporlar | 6 | TS-RPR-01…07 (bilinen seed ile beklenen değerler) | #65, #66, #67 |
+| Takvim / Gantt | 5 | TS-TKV-01…03, TS-GNT-01 — bileşen testleri ✅ CI (`Timeline.test.tsx`, #129); E2E ✅ CI (`timeline.spec.js`, #140) | #57, #58 |
+| Dosyalar | 5 | TS-DSY-01…04 (tür, boyut, bayt imzası, yetkisiz indirme) — API ✅ CI (`files.api.test.js`, #132); E2E ✅ CI (`files.spec.js`, #140) | #58, #59, #60 |
+| Raporlar | 6 | R-01…R-07 (#143 kabul planı, sabit veri seti) — API doğruluk testleri yazıldı (`reports.api.test.js`), #65 birleşince yeşile döner; E2E #64 ile | #64, #65, #66, #67 |
 
 ## 7. Manuel kontroller (RC ve sunum öncesi)
 
