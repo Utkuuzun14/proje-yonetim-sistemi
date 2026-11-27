@@ -4,7 +4,7 @@
 |---|---|
 | Kart | #60 · "Test kapsamı (coverage) raporu" |
 | Sorumlu | Utku Uzun |
-| Ölçüm | 20 Kasım 2026 · develop `453a2dd` (#133 dahil) + #131, #134, #132, #129, #128 ve bu PR'ın yerel entegrasyonu |
+| Ölçüm | 22 Kasım 2026 · **v0.5** (main `edb4118`, develop `d54dd5d`) — zincirin tamamı birleştikten sonra |
 | Önceki ölçüm | 15 Kasım 2026 · develop `64def5d` (görev, dosya ve takvim modülleri yokken) |
 | Araç | Sunucu: Jest `--coverage` (`npm run test:coverage`, CI her PR'da `coverage-server` artefaktı olarak yükler) · İstemci: Vitest + `@vitest/coverage-v8` (yerel ölçüm, CI'da yok) |
 
@@ -13,12 +13,12 @@
 | Katman | Test | Satır | Dal | Fonksiyon | 15 Kasım (satır) |
 |---|---|---|---|---|---|
 | Sunucu (`server/src`) | 215 geçti, 7 todo | **%97,7** | %87,6 | %100 | %97,2 |
-| İstemci (`client/src`) | 92 geçti | **%86,7** | %81,6 | %81,6 | %81,8 |
-| E2E (Playwright, Docker Compose) | 11 geçti | — | — | — | 7 geçti, 2 `fixme` |
+| İstemci (`client/src`) | 92 geçti | **%86,6** | %81,6 | %81,3 | %81,8 |
+| E2E (Playwright, Docker Compose) | 20 geçti | — | — | — | 7 geçti, 2 `fixme` |
 
 Görev/yorum API'si (#51), dosya API'si (#58) ve gerçek görev, takvim ve dosya ekranları (#129) ölçüme girdi. Yeni modüller eklenmesine rağmen kapsam düşmedi. Önceki raporda konan "sunucu satır kapsamı %90'ın altına düşmesin" hedefi sağlanıyor.
 
-Ölçüm birleştirme öncesi yerel entegrasyon üzerinde yapıldı. Zincirdeki PR'lar develop'a girdikten sonra develop üzerinde tekrarlanıp bu tablo güncellenecek.
+20 Kasım'daki yerel entegrasyon ölçümü, zincir birleştikten sonra v0.5 üzerinde tekrarlandı. Sunucu sonuçları birebir aynı; istemcide fark yuvarlama düzeyinde (satır %86,7 → %86,6).
 
 ## Sunucu
 
@@ -39,7 +39,7 @@ Kapsanmayan satırların çoğu hata, eşzamanlılık ve ortam dallarıdır. İ�
 
 | Klasör | Satır | Not |
 |---|---|---|
-| `src` (`App.tsx`, `api.ts`) | %92,7 | `main.tsx` giriş noktası, test edilmez |
+| `src` (`App.tsx`, `api.ts`) | %91,6 | `main.tsx` giriş noktası, test edilmez |
 | `src/live` (gerçek API ekranları) | %98,1 | `Tasks.tsx` %96,8, `Timeline.tsx` %96,5, `ProjectFiles.tsx` %100, `taskApi.ts` / `fileApi.ts` %100 |
 | `src/workspace` (önizleme/demo verisi) | %75,6 | En düşükler: `Calendar.tsx` %27,9, `ProjectFiles.tsx` %51,4, `files.ts` %63,6 |
 
@@ -47,7 +47,7 @@ Kapsanmayan satırların çoğu hata, eşzamanlılık ve ortam dallarıdır. İ�
 
 ## E2E
 
-`auth`, `projects` ve `kanban` senaryoları gerçek API ve Docker Compose ortamında koşuyor. Kanban senaryoları (TS-KNB-01/02) #128'de `fixme`'den çıkarıldı. Kapsadıkları: sürükle-bırak, yenilemeden sonra kartın yerinde kalması, durum geçmişi kaydı, sunucu hatasında kartın geri dönmesi.
+20 senaryo, 6 dosya: `auth`, `projects`, `kanban`, `files`, `timeline`, `task-detail`. Hepsi gerçek API ve Docker Compose ortamında, CI'da her PR'da koşuyor. Dosya (TS-DSY-01…04), takvim/Gantt (TS-TKV-01…03, TS-GNT-01) ve yorum/XSS (TS-YRM-01, R-YRM-03) senaryoları #140 ile eklendi. Kanban senaryoları (TS-KNB-01/02) #128'de `fixme`'den çıkarıldı. Kapsadıkları: sürükle-bırak, yenilemeden sonra kartın yerinde kalması, durum geçmişi kaydı, sunucu hatasında kartın geri dönmesi.
 
 ## Bulunan ve düzeltilen
 
@@ -55,9 +55,9 @@ Kapsanmayan satırların çoğu hata, eşzamanlılık ve ortam dallarıdır. İ�
 
 ## Öneriler
 
-1. Zincir birleşince ölçüm develop'ta tekrarlanacak. Hedef değişmiyor: sunucuda satır kapsamı %90'ın altına düşmesin.
+1. Hedef değişmiyor: sunucuda satır kapsamı %90'ın altına düşmesin. Raporlama modülü gelince ölçüm RC öncesi tekrarlanacak.
 2. İstemci kapsamı CI'a eklenebilir (`@vitest/coverage-v8` ile rapor artefaktı). Şu an yalnız yerelde ölçülüyor.
-3. Dosya ve takvim ekranları için E2E senaryoları (TS-DSY, TS-TKV) #67'deki tam regresyon setinde eklenecek.
+3. Raporlama modülü gelince 3 rapor türü için doğruluk testleri ve E2E senaryosu eklenecek (#67'nin kalan maddesi).
 
 ## Nasıl ölçülür?
 
