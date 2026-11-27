@@ -33,8 +33,16 @@ module.exports = async () => {
   const client = new Client({ connectionString: TEST_DATABASE_URL });
   await client.connect();
   await client.query('SET client_min_messages TO WARNING');
-  for (const file of ['init.sql', 'seed.sql']) {
-    await client.query(fs.readFileSync(path.join(DB_DIR, file), 'utf8'));
+  await client.query(fs.readFileSync(path.join(DB_DIR, 'init.sql'), 'utf8'));
+
+  const migrationsDir = path.join(DB_DIR, 'migrations');
+  if (fs.existsSync(migrationsDir)) {
+    const migFiles = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
+    for (const mig of migFiles) {
+      await client.query(fs.readFileSync(path.join(migrationsDir, mig), 'utf8'));
+    }
   }
+
+  await client.query(fs.readFileSync(path.join(DB_DIR, 'seed.sql'), 'utf8'));
   await client.end();
 };

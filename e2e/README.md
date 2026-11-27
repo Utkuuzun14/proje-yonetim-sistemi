@@ -26,6 +26,9 @@ hata olursa iz (trace), ekran görüntüsü ve video `playwright-report` artefak
 |---|---|
 | `auth.spec.js` | TS-AUTH-01, 04, 05, 07, 08, 09 |
 | `projects.spec.js` | TS-PRJ-01, 02 · TS-ROL-04, 05 · rol geçişi |
-| `kanban.spec.js` | TS-KNB-01, 02 — `fixme`, #51 + #50 bekleniyor |
+| `kanban.spec.js` | TS-KNB-01, 02 — sürükle-bırak, kalıcılık, geçmiş, hata durumunda geri dönüş |
+| `files.spec.js` | TS-DSY-01…04 — yükleme ve göreve bağlama, filtre, içerik aynı indirme, tür/bayt imzası/boyut reddi, üye olmayan ve oturumsuz erişim |
+| `timeline.spec.js` | TS-TKV-01…03, TS-GNT-01 — aralıklı ve tek tarihli görevin günleri, ay geçişi, arama, salt okunur Gantt, tarihsiz görevler |
+| `task-detail.spec.js` | TS-YRM-01 · R-YRM-03 — yorum ve yazar, açıklama/yorumdaki HTML ve script düz metin |
 
-Testler seed kullanıcılarını kullanır (`database/seed.sql`) ve her koşuda benzersiz kayıt/proje adları üretir.
+Testler seed kullanıcılarını kullanır (`database/seed.sql`) ve her koşuda benzersiz kayıt/proje/görev adları üretir. Oluşturulan görevler test sonunda silinir; dosya silme uç noktası olmadığı için yüklenen test dosyaları VT'de kalır.
