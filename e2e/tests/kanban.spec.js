@@ -8,9 +8,19 @@ const BOARD_URL = `/uygulama/projeler/${PROJECT_ID}/gorevler`;
 
 const column = (page, name) => page.getByRole('region', { name, exact: true });
 const cardIn = (page, name, title) => column(page, name).getByRole('button', { name: title, exact: true });
-// Sütunun üst kısmına bırak: varsayılan hedef sütunun ortası, sütun ekrandan uzunsa (ör. Windows yazı tipleriyle)
-// görünür alanın dışında kalıyor ve bırakma gerçekleşmiyor. Kullanıcı da sütunun görünen kısmına bırakır.
-const DROP = { targetPosition: { x: 40, y: 40 } };
+// Kartı sürükleyip hedef sütunda kartla aynı yüksekliğe bırakır. Sabit bir nokta iki ortamda da sorun çıkarıyordu:
+// sütun ortası, sütun ekrandan uzunsa (Windows yazı tipleri) görünür alanın dışında kalıyor; sütun üstü ise kart
+// sütunun altındayken (CI, 1280×720) sürükleme sırasında sayfayı kaydırıp bırakmayı bozuyordu. Aynı yükseklikte
+// bırakınca kaydırma gerekmez; kullanıcı da kartı yana doğru sürükler.
+async function dragToColumn(page, taskId, name) {
+  const card = page.getByTestId(`task-${taskId}`);
+  const target = column(page, name);
+  await card.scrollIntoViewIfNeeded();
+  const from = await card.boundingBox();
+  const to = await target.boundingBox();
+  const y = Math.min(Math.max(from.y + from.height / 2 - to.y, 10), to.height - 10);
+  await card.dragTo(target, { targetPosition: { x: to.width / 2, y } });
+}
 
 async function apiLogin(request, email) {
   const res = await request.post('/api/auth/login', { data: { email, password: SEED.password } });
@@ -45,7 +55,7 @@ test.describe('Kanban (Sprint 4)', () => {
     await expect(cardIn(page, 'To Do', task.title)).toBeVisible();
 
     const saved = page.waitForResponse((r) => r.url().endsWith(`/api/tasks/${task.id}`) && r.request().method() === 'PATCH');
-    await page.getByTestId(`task-${task.id}`).dragTo(column(page, 'In Progress'), DROP);
+    await dragToColumn(page, task.id, 'In Progress');
     expect((await saved).status()).toBe(200);
     await expect(cardIn(page, 'In Progress', task.title)).toBeVisible();
 
@@ -82,7 +92,7 @@ test.describe('Kanban (Sprint 4)', () => {
     await page.goto(BOARD_URL);
     await expect(cardIn(page, 'To Do', task.title)).toBeVisible();
 
-    await page.getByTestId(`task-${task.id}`).dragTo(column(page, 'In Progress'), DROP);
+    await dragToColumn(page, task.id, 'In Progress');
 
     await expect(page.locator('main').getByRole('alert')).toBeVisible();
     await expect(cardIn(page, 'To Do', task.title)).toBeEnabled();
