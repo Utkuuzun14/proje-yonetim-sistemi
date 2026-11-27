@@ -28,6 +28,7 @@ function createApp(options = {}) {
   app.use('/api/users', require('./modules/users/users.routes'));
   const taskRoutes = require('./modules/tasks/tasks.routes');
   app.use('/api/projects/:id/tasks', taskRoutes.projectTasks);
+  app.use('/api/projects/:id/reports', require('./modules/reports/reports.routes'));
   app.use('/api/projects', require('./modules/projects/projects.routes'));
   app.use('/api/tasks', taskRoutes.tasks);
   const fileRoutes = require('./modules/files/files.routes');
