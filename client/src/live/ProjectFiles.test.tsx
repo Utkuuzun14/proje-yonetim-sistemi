@@ -13,6 +13,7 @@ function backend({uploadStatus=201,downloadStatus=200,listStatus=200}={}){
  let files:typeof meta[]=[];
  const fetcher=vi.fn(async(url:string,options:RequestInit={})=>{
  const u=new URL(url),path=u.pathname;
+ if(path==='/api/projects/7')return Response.json({data:{id:7,name:'Proje adı',members:[user]}});
  if(path==='/api/auth/me')return Response.json({data:user});
  if(path==='/api/projects/7/tasks')return Response.json({data:[task]});
  if(path==='/api/files/20/download')return downloadStatus===200?new Response('%PDF-1.4',{headers:{'Content-Type':'application/pdf'}}):Response.json({}, {status:downloadStatus});
@@ -34,6 +35,7 @@ describe('Dosya sözleşmesi',()=>{
  it('başka projenin dosyasını ve bozuk boyutu reddeder',()=>{expect(()=>projectFile({...meta,project_id:8},7)).toThrow();expect(()=>projectFile({...meta,size:'8'},7)).toThrow();});
 });
 describe('Gerçek hesap dosya akışı',()=>{
+ it('başlıkta API proje adını gösterir',async()=>{backend();page();expect(await screen.findByRole('heading',{name:'Proje adı · Dosyalar'})).toBeVisible();expect(screen.queryByText('Proje #7 dosyaları')).not.toBeInTheDocument();});
  it('multipart file ve task_id gönderir; Authorization kullanır, Content-Type boundary tarayıcıya bırakılır',async()=>{const fetcher=backend();page();await screen.findByText('Henüz dosya eklenmedi.');await userEvent.selectOptions(screen.getByLabelText('Göreve bağla (isteğe bağlı)'),'10');await userEvent.upload(screen.getByLabelText('Yüklenecek dosya'),pdf());await userEvent.click(screen.getByRole('button',{name:'Dosyayı yükle'}));expect(await screen.findByText('Dosya sunucuya yüklendi.')).toBeVisible();await screen.findByRole('button',{name:'rapor.pdf indir'});const [,opts]=fetcher.mock.calls.find(([,o])=>o?.method==='POST')!;expect(opts!.body).toBeInstanceOf(FormData);expect((opts!.body as FormData).get('task_id')).toBe('10');expect((opts!.body as FormData).get('file')).toBeInstanceOf(File);expect(opts!.headers).toEqual({Authorization:'Bearer saved'});await userEvent.selectOptions(screen.getByLabelText('Dosyaları göreve göre filtrele'),'10');await waitFor(()=>expect(fetcher.mock.calls.some(([url])=>url.endsWith('/files?taskId=10'))).toBe(true));});
  it('projeye yüklerken task_id göndermez ve listeyi sunucudan yeniler',async()=>{const fetcher=backend();page();await upload();await screen.findByRole('button',{name:'rapor.pdf indir'});const body=fetcher.mock.calls.find(([,o])=>o?.method==='POST')![1]!.body as FormData;expect(body.has('task_id')).toBe(false);expect(fetcher.mock.calls.filter(([u,o])=>u.endsWith('/files')&&o?.method==='GET').length).toBeGreaterThan(1);});
  it.each([400,413])('%s yükleme hatasında seçili dosyayı korur',async status=>{backend({uploadStatus:status});page();await upload();expect(await screen.findByRole('alert')).toHaveTextContent(status===400?'İçerik imzası':'10 MB');expect((screen.getByLabelText('Yüklenecek dosya') as HTMLInputElement).files?.[0].name).toBe('rapor.pdf');expect(screen.queryByText('Dosya sunucuya yüklendi.')).not.toBeInTheDocument();});
