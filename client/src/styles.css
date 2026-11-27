@@ -679,3 +679,6 @@ small {
     scroll-behavior: auto !important;
   }
 }
+
+/* Account text sits on the dark sidebar, not the light page background. */
+.sidebar p { color: #c0d1c7; }
