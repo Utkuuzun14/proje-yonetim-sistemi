@@ -1,0 +1,9 @@
+.report-sections { display: grid; gap: 1rem; min-width: 0; }
+.report-sections > .card { min-width: 0; }
+.report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+.report-summary dd { margin: .4rem 0 0; font-size: 1.6rem; font-weight: 700; }
+.report-progress { width: 100%; height: 1.4rem; accent-color: #27654c; }
+.report-table-scroll { overflow-x: auto; max-width: 100%; }
+.report-table { border-collapse: collapse; width: 100%; }
+.report-table th, .report-table td { padding: .75rem; text-align: left; border-bottom: 1px solid #cad8cf; }
+.report-table caption { text-align: left; padding: .5rem 0; }
