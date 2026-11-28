@@ -4,7 +4,7 @@ const config = require('../config');
 
 /**
  * SRS 4.2 (5): /api/auth/login için aynı IP'den pencere başına en fazla N başarısız deneme.
- * Başarılı girişler sayılmaz. Aşımda 429 + Retry-After başlığı döner.
+ * Başarılı girişler (< 400) ve 429 yanıtları sayılmaz (#146). Aşımda 429 + Retry-After başlığı döner.
  * Her createApp() çağrısı kendi sayaç deposunu oluşturur (testlerde birbirini etkilemez).
  */
 function createLoginRateLimit(options = {}) {
@@ -13,6 +13,7 @@ function createLoginRateLimit(options = {}) {
     windowMs,
     limit: options.maxFailures ?? config.loginRateLimit.maxFailures,
     skipSuccessfulRequests: true,
+    requestWasSuccessful: (_req, res) => res.statusCode < 400 || res.statusCode === 429,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     handler: (req, res) => {
