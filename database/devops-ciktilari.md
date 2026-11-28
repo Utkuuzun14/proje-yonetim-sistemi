@@ -2,8 +2,8 @@
 
 **Sorumlu:** Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps)  
 **Proje:** Proje Yönetim Sistemi (Azure Boards İlhamlı Web Platformu)  
-**Kapsam:** Sprint 0 (H1), Sprint 1 (H2), Sprint 2 (H3), Sprint 3 (H4), Sprint 4 (H5 - #52), Sprint 5 (H6 - #59)  
-**İlgili GitHub Issue'ları:** [#24](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/24), [#31](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/31), [#38](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/38), [#45](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/45), [#52](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/52), [#59](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/59)
+**Kapsam:** Sprint 0 (H1), Sprint 1 (H2), Sprint 2 (H3), Sprint 3 (H4), Sprint 4 (H5 - #52), Sprint 5 (H6 - #59), Sprint 6 (H7 - #66)\
+**İlgili GitHub Issue'ları:** [#24](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/24), [#31](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/31), [#38](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/38), [#45](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/45), [#52](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/52), [#59](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/59), [#66](https://github.com/Utkuuzun14/proje-yonetim-sistemi/issues/66)
 
 ---
 
@@ -428,3 +428,49 @@ Geliştirme ortamından bağımsız, prodüksiyon standartlarına sahip staging 
 Mustafa'nın dosya yükleme ve indirme API'sini geliştirmesini kolaylaştırmak üzere:
 - `files.repository.js` için `createFile({ projectId, taskId, uploaderId, name, type, size, storagePath })`, `findById(id)`, `listByProject(projectId)`, `listByTask(taskId)`, `deleteFile(id)` sorguları optimize edilmiştir.
 - `docker-compose.yml` ve staging yapılandırmasında `UPLOAD_DIR: /app/uploads` çevre değişkeni standartlaştırılmıştır.
+
+---
+
+## 8. Sprint 6: Raporlama Sorguları, İndeks Optimizasyonu ve Yedekleme Mimarisi (Issue #66)
+
+### 8.1 3 Temel Rapor Türü İçin Analitik SQL Sorguları (`database/queries/raporlar.sql`)
+
+14 Kasım kapsam kararı ve Issue #62 / #65 sözleşmesi doğrultusunda karar desteği sağlayan üç temel analitik SQL sorgusu geliştirilmiş ve doğrulanmıştır:
+
+1. **Proje İlerleme Yüzdesi ve Durum Dağılımı (R-01, R-02):**
+   - Projedeki toplam görev sayısı, `To Do`, `In Progress`, `Done` durum dağılımı, geciken görev sayısı (`end_date < CURRENT_DATE AND status <> 'Done'`) ve tamamlanma yüzdesi (`(Done / Total) * 100`) tek bir `FILTER` agregasyon sorgusuyla hesaplanır.
+   - 0 görevli projelerde sıfıra bölme (division by zero) durumu `CASE WHEN COUNT(*) = 0 THEN 0.0` ile ele alınarak `NaN` veya `null%` oluşması önlenmiştir.
+2. **Kişi Bazlı Tamamlama ve İş Yükü Dağılımı (R-03, R-04):**
+   - Proje üyeleri (`project_members`) ile projede görevi olup üyeliği bulunmayan kullanıcılar `CTE (people)` üzerinden birleştirilir (`UNION`).
+   - Her üyenin atanan toplam görev sayısı, durum dağılımı, geciken iş sayısı ve bireysel tamamlama oranı hesaplanır.
+   - Görevi bulunmayan aktif üyeler 0 sayılarıyla listelenir; atanmamış görevler ise ayrı bir satır olarak proje toplamıyla tam mutabakat sağlar.
+3. **Tarih Aralıklı İlerleme Raporu (R-05, R-06):**
+   - Seçilen `from` ve `to` sınırları (iki uç dahil) arasında `created_at::date` ile oluşturulan görev sayısı,
+   - `task_status_history` tablosunda `new_status = 'Done'` ve `changed_at::date BETWEEN $2 AND $3` koşuluyla tamamlanan farklı görevler (`COUNT(DISTINCT h.task_id)`) atomik olarak listelenir.
+
+### 8.2 Sorgu Optimizasyonu ve İndeksleme Stratejisi (`004_raporlama_indeksleri.sql`)
+
+Büyük veri setlerinde analitik sorguların < 1 sn (SRS FR-09) performans sınırında kalmasını sağlamak üzere 4 adet performans indeksi eklenmiştir:
+
+1. **`idx_tasks_project_status_end_date` (`tasks(project_id, status, end_date)`):** Durum ve son tarih filtrelemelerinde tam indeks taraması sağlar; geciken iş sorgularında disk okumasını minimize eder.
+2. **`idx_tasks_project_assignee` (`tasks(project_id, assignee_id)`):** Proje ve kişi bazlı gruplama (`GROUP BY u.id`) işlemlerinde `Seq Scan` yerine `Index Scan` kullanılmasını sağlar.
+3. **`idx_tasks_project_created_at` (`tasks(project_id, created_at)`):** Tarih aralıklı rapor sorgularında oluşturulma tarihine göre aralık taramasını optimize eder.
+4. **`idx_task_status_history_done_changed` (`task_status_history(task_id, new_status, changed_at)`):** Durum geçmişinde `Done` geçişlerinin ve tarih filtresinin birleşik taranmasını sağlar.
+
+### 8.3 Veri Tabanı Yedekleme ve Geri Yükleme Betikleri (`scripts/backup.*`, `scripts/restore.*`)
+
+Prodüksiyon ve Staging ortamlarında veri güvenliğini sağlamak, sunum öncesi olası risklere karşı anlık geri dönüş güvencesi sunmak amacıyla otomatik yedekleme betikleri hazırlanmıştır:
+
+- **Yedekleme:**
+  - `scripts/backup.sh` (Linux / Bash / Docker)
+  - `scripts/backup.ps1` (Windows / PowerShell)
+  - `pg_dump` aracılığıyla veritabanı şemasını ve verilerini temizleme komutlarıyla (`--clean --if-exists --no-owner --no-privileges`) zaman damgalı SQL dosyalarına (`database/backups/sektech_backup_YYYYMMDD_HHMMSS.sql`) aktarır.
+- **Geri Yükleme:**
+  - `scripts/restore.sh` (Linux / Bash / Docker)
+  - `scripts/restore.ps1` (Windows / PowerShell)
+  - Belirtilen `.sql` yedek dosyasını hedef PostgreSQL sunucusuna hatasız şekilde geri yükler.
+
+### 8.4 M4 Özellik Dondurma Uyumu ve Doğrulama
+
+- `database/migrations/004_raporlama_indeksleri.sql` idempotent (`IF NOT EXISTS`) olarak test edilmiş ve `server/tests/helpers/globalSetup.js` tarafından otomatik olarak test veri tabanına yüklenmiştir.
+- Mustafa'nın Rapor API'si (#65) ve Utku'nun Rapor Doğruluk Testleri (#67) ile %100 uyumlu olduğu doğrulanmıştır.

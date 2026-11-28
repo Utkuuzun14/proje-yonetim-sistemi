@@ -1,6 +1,6 @@
 # Veri Tabanı Migration Kılavuzu
 
-**Sorumlu:** Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps) — Issue #52, #59
+**Sorumlu:** Buğra Durmuş (Veri Tabanı Yöneticisi / DevOps) — Issue #52, #59, #66
 
 ## Genel İlkeler
 
@@ -16,3 +16,4 @@
 | `001` | `001_baslangic.sql` | Başlangıç veri modeli tabloları (roller, kullanıcılar, projeler, üyeler, görevler, geçmiş, yorumlar, dosyalar) | #38, #52 |
 | `002` | `002_gorev_turu.sql` | `tasks` tablosuna `type` sütunu (`Task`, `Bug`, `Feature`), tarih sıralama kısıtı `chk_tasks_dates` ve aralık indeksleri | #52, #51 (Karar 11) |
 | `003` | `003_dosya_gorev_baglantisi.sql` | `files` tablosuna `task_id` sütunu eklenmesi ve göreve dosya bağlama indeksi | #59, #58 (Karar 11) |
+| `004` | `004_raporlama_indeksleri.sql` | Raporlama ve analitik sorgularını hızlandırmak üzere görev ve durum geçmişi bileşik indeksleri | #66, #65 |
